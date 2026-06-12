@@ -1,6 +1,5 @@
 package com.capitec.securefile.api;
 
-import com.capitec.securefile.model.response.StatementAuditResponse;
 import com.capitec.securefile.model.response.StatementSummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,22 +28,4 @@ public interface AdminStatementsApi {
                         })
             })
     ResponseEntity<List<StatementSummaryResponse>> listCustomerStatements(@Valid @NotBlank String customerId);
-
-    @Operation(summary = "Get audit events for a statement")
-    @ApiResponses(
-            value = {
-                @ApiResponse(
-                        responseCode = "200",
-                        description = "Successfully retrieved statement audit events.",
-                        content = {
-                            @Content(
-                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = StatementAuditResponse.class))
-                        }),
-                @ApiResponse(
-                        responseCode = "404",
-                        description = "Statement not found.",
-                        content = @Content)
-            })
-    ResponseEntity<StatementAuditResponse> getStatementAudit(@Valid @NotBlank String statementId);
 }

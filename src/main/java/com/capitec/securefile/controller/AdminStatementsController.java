@@ -1,7 +1,6 @@
 package com.capitec.securefile.controller;
 
 import com.capitec.securefile.api.AdminStatementsApi;
-import com.capitec.securefile.model.response.StatementAuditResponse;
 import com.capitec.securefile.model.response.StatementSummaryResponse;
 import com.capitec.securefile.service.StatementApiService;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +22,5 @@ public class AdminStatementsController implements AdminStatementsApi {
     @Override
     public ResponseEntity<List<StatementSummaryResponse>> listCustomerStatements(@PathVariable String customerId) {
         return ResponseEntity.ok(statementApiService.listStatementsForCustomer(customerId));
-    }
-
-    @GetMapping("/statements/{statementId}/audit")
-    @Override
-    public ResponseEntity<StatementAuditResponse> getStatementAudit(@PathVariable String statementId) {
-        return ResponseEntity.ok(statementApiService.getStatementAudit(statementId));
     }
 }

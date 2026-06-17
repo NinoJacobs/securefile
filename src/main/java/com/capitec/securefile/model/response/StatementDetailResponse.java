@@ -15,4 +15,6 @@ public record StatementDetailResponse(
         StatementStatus status,
         String fileName,
         long fileSizeBytes,
-        String contentType) {}
+        String contentType,
+        String downloadUrl,
+        OffsetDateTime downloadUrlExpiresAt) {}

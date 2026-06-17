@@ -6,11 +6,13 @@ import com.capitec.securefile.model.response.StatementDetailResponse;
 import com.capitec.securefile.model.response.StatementSummaryResponse;
 import com.capitec.securefile.service.StatementApiService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -38,5 +40,13 @@ public class CustomerStatementsController implements CustomerStatementsApi {
     @Override
     public ResponseEntity<DownloadLinkResponse> createDownloadLink(@PathVariable String statementId) {
         return ResponseEntity.status(201).body(statementApiService.createDownloadLink(statementId));
+    }
+
+    @GetMapping("/{statementId}/download")
+    @Override
+    public ResponseEntity<Resource> downloadStatement(
+            @PathVariable String statementId,
+            @RequestParam String token) {
+        return statementApiService.downloadStatement(statementId, token);
     }
 }

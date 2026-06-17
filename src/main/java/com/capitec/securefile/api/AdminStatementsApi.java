@@ -1,5 +1,8 @@
 package com.capitec.securefile.api;
 
+import com.capitec.securefile.model.request.GenerateStatementRequest;
+import com.capitec.securefile.model.response.GenerationRequestResponse;
+import com.capitec.securefile.model.response.StatementDetailResponse;
 import com.capitec.securefile.model.response.StatementSummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,6 +14,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 @GlobalApi
 public interface AdminStatementsApi {
@@ -28,4 +32,17 @@ public interface AdminStatementsApi {
                         })
             })
     ResponseEntity<List<StatementSummaryResponse>> listCustomerStatements(@Valid @NotBlank String customerId);
+
+    @Operation(summary = "Upload a PDF statement for a customer as an administrator")
+    ResponseEntity<StatementDetailResponse> uploadCustomerStatement(
+            @Valid @NotBlank String customerId,
+            MultipartFile file,
+            String statementName,
+            String periodStart,
+            String periodEnd);
+
+    @Operation(summary = "Request statement generation for a customer as an administrator")
+    ResponseEntity<GenerationRequestResponse> generateCustomerStatement(
+            @Valid @NotBlank String customerId,
+            @Valid GenerateStatementRequest request);
 }

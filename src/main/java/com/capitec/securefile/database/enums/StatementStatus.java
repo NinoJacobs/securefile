@@ -2,5 +2,8 @@ package com.capitec.securefile.database.enums;
 
 public enum StatementStatus {
     AVAILABLE,
-    PROCESSING
+    GENERATING,
+    PROCESSING,
+    FAILED,
+    DELETED
 }

@@ -1,3 +1,16 @@
 spring:
   application:
     name: securefile
+  datasource:
+    url: jdbc:postgresql://localhost:5432/securefile
+    username: admin
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+securefile:
+  storage:
+    statement-directory: storage/statements
+  download-link:
+    secret: local-dev-download-link-secret-change-me

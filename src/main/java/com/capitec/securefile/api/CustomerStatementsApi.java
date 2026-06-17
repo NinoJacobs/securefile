@@ -13,6 +13,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.Resource;
 
 @GlobalApi
 public interface CustomerStatementsApi {
@@ -66,4 +67,7 @@ public interface CustomerStatementsApi {
                         content = @Content)
             })
     ResponseEntity<DownloadLinkResponse> createDownloadLink(@Valid @NotBlank String statementId);
+
+    @Operation(summary = "Download a statement using a temporary link token")
+    ResponseEntity<Resource> downloadStatement(@Valid @NotBlank String statementId, @Valid @NotBlank String token);
 }

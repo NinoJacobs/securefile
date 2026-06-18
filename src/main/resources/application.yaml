@@ -2,7 +2,7 @@ spring:
   application:
     name: securefile
   datasource:
-    url: jdbc:postgresql://localhost:5432/securefile
+    url: jdbc:postgresql://localhost:5433/securefile
     username: admin
     password: admin
   jpa:
@@ -10,7 +10,12 @@ spring:
       ddl-auto: none
 
 securefile:
-  storage:
-    statement-directory: storage/statements
+  s3:
+    endpoint: http://localhost:4566
+    region: us-east-1
+    bucket: securefile-statements
+    access-key: test
+    secret-key: test
+    path-style-access-enabled: true
   download-link:
     secret: local-dev-download-link-secret-change-me

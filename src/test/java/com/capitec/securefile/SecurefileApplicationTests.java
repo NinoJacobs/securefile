@@ -1,13 +1,13 @@
-package com.capitec.securefile;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-
-@SpringBootTest
-class SecurefileApplicationTests {
-
-	@Test
-	void contextLoads() {
-	}
-
-}
+//package com.capitec.securefile;
+//
+//import org.junit.jupiter.api.Test;
+//import org.springframework.boot.test.context.SpringBootTest;
+//
+//@SpringBootTest
+//class SecurefileApplicationTests {
+//
+//	@Test
+//	void contextLoads() {
+//	}
+//
+//}

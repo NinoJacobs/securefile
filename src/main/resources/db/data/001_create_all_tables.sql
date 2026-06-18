@@ -57,25 +57,3 @@ CREATE INDEX idx_statements_customer_id
 
 CREATE INDEX idx_statements_customer_period
     ON statements (customer_id, period_start, period_end);
-
-CREATE TABLE statement_generation_requests
-(
-    id                   BIGSERIAL PRIMARY KEY,
-    customer_id          BIGINT      NOT NULL REFERENCES customers (id),
-    requested_by_user_id BIGINT REFERENCES users (id),
-    status               VARCHAR(30) NOT NULL DEFAULT 'PENDING',
-    period_start         DATE,
-    period_end           DATE,
-    statement_id         BIGINT REFERENCES statements (id),
-    error_message        TEXT,
-    requested_at         TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    completed_at         TIMESTAMP,
-    created_at           TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at           TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_statement_generation_requests_customer_id
-    ON statement_generation_requests (customer_id);
-
-CREATE INDEX idx_statement_generation_requests_status
-    ON statement_generation_requests (status);

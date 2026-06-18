@@ -1,6 +1,5 @@
 package com.capitec.securefile.api;
 
-import com.capitec.securefile.model.response.DownloadLinkResponse;
 import com.capitec.securefile.model.response.StatementDetailResponse;
 import com.capitec.securefile.model.response.StatementSummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -49,24 +48,6 @@ public interface CustomerStatementsApi {
                         content = @Content)
             })
     ResponseEntity<StatementDetailResponse> getStatement(@Valid @NotBlank String statementId);
-
-    @Operation(summary = "Create a temporary download link for a statement")
-    @ApiResponses(
-            value = {
-                @ApiResponse(
-                        responseCode = "201",
-                        description = "Successfully created a temporary download link for the statement.",
-                        content = {
-                            @Content(
-                                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = DownloadLinkResponse.class))
-                        }),
-                @ApiResponse(
-                        responseCode = "404",
-                        description = "Statement not found.",
-                        content = @Content)
-            })
-    ResponseEntity<DownloadLinkResponse> createDownloadLink(@Valid @NotBlank String statementId);
 
     @Operation(summary = "Download a statement using a temporary link token")
     ResponseEntity<Resource> downloadStatement(@Valid @NotBlank String statementId, @Valid @NotBlank String token);

@@ -26,6 +26,30 @@ What is not implemented yet:
 - Persisted download links
 ```
 
+## Target Direction
+
+The intended product direction is no longer admin-uploaded statement files as the primary workflow.
+
+The target system should behave more like a real banking statement service:
+
+```text
+- Customer account and transaction data already exist in the system
+- A customer requests a statement for a period such as 1 month, 3 months, 6 months, or a custom date range
+- The backend generates a PDF statement from the underlying account transaction data
+- The generated PDF is stored in S3-compatible object storage
+- The database stores statement metadata plus the object key
+- The customer receives a secure, time-limited download link for the generated PDF
+```
+
+What this means for the current codebase:
+
+```text
+- The current LocalStack S3 integration and object-key storage approach still fit the target design
+- The current admin upload/generate flow is only a temporary placeholder
+- The long-term source of truth for statements should be account and transaction data, not manually uploaded files
+- Statement generation should become period-based and data-driven
+```
+
 Important storage note:
 
 ```text
@@ -415,11 +439,13 @@ Run the app:
 Recommended next steps:
 
 ```text
-Wire LocalStack S3 into the Java storage layer so statements stop using the local filesystem.
 Set up Liquibase for versioned schema migrations and reference-data bootstrap.
 Add authentication and replace the temporary first-customer lookup.
 Protect admin endpoints by role.
-Replace fake admin statement generation with a real generation workflow.
+Introduce account and transaction domain tables as the source data for statement generation.
+Replace the temporary admin upload/generate flow with period-based statement generation from account transactions.
+Support customer statement requests for 1 month, 3 months, 6 months, and custom date ranges.
+Replace the hand-built PDF generation with Apache PDFBox.
 Add integration tests that match the current database-backed API.
 Move local secrets out of application.yaml for non-local environments.
 ```

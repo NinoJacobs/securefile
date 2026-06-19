@@ -24,8 +24,7 @@ public class StatementDocumentService {
                 "Statement Name: %s".formatted(statement.getStatementName()),
                 "Period Start: %s".formatted(formatDate(statement.getPeriodStart())),
                 "Period End: %s".formatted(formatDate(statement.getPeriodEnd())),
-                "Generated At: %s".formatted(formatDateTime(statement.getGeneratedAt())),
-                "Status: %s".formatted(statement.getStatus())
+                "Generated At: %s".formatted(formatDateTime(statement.getGeneratedAt()))
         );
 
         return buildPdf(lines);

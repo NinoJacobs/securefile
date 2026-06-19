@@ -51,5 +51,5 @@ public interface CustomerStatementsApi {
     ResponseEntity<StatementDetailResponse> getStatement(@Valid @NotBlank String statementId);
 
     @Operation(summary = "Download a statement using a temporary link token")
-    ResponseEntity<Resource> downloadStatement(@Valid @NotBlank String statementId);
+    ResponseEntity<Resource> downloadStatement(@Valid @NotBlank String statementId, @Valid @NotBlank String token);
 }

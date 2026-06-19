@@ -1,6 +1,4 @@
 package com.capitec.securefile.model.response;
-
-import com.capitec.securefile.database.enums.StatementStatus;
 import lombok.Builder;
 import lombok.Value;
 
@@ -16,5 +14,6 @@ public class StatementSummaryResponse {
     LocalDate periodStart;
     LocalDate periodEnd;
     OffsetDateTime generatedAt;
-    StatementStatus status;
+    String downloadUrl;
+    OffsetDateTime downloadUrlExpiresAt;
 }

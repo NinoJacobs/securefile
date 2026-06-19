@@ -46,8 +46,8 @@ CREATE TABLE statements
     file_size_bytes BIGINT,
     content_type    VARCHAR(100) NOT NULL DEFAULT 'application/pdf',
     checksum        VARCHAR(128),
-    status          VARCHAR(30)  NOT NULL DEFAULT 'AVAILABLE',
     generated_at    TIMESTAMP,
+    download_link_expires_at TIMESTAMP,
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

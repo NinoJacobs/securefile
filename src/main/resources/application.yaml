@@ -17,5 +17,4 @@ securefile:
     access-key: test
     secret-key: test
     path-style-access-enabled: true
-  download-link:
-    secret: local-dev-download-link-secret-change-me
+

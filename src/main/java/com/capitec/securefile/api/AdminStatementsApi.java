@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -50,4 +51,9 @@ public interface AdminStatementsApi {
     @Operation(summary = "Request statement generation for a customer as an administrator")
     ResponseEntity<StatementDetailResponse> generateCustomerStatement(
             @Valid @NotBlank String customerId);
+
+    @Operation(summary = "Upload a PDF statement for a customer as an administrator")
+    ResponseEntity<StatementDetailResponse> uploadCustomerStatement(
+            @Valid @NotBlank String customerId,
+            MultipartFile file);
 }

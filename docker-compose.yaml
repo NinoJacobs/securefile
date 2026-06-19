@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: securefile-postgres
+    environment:
+      POSTGRES_DB: securefile
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5433:5432"
+    volumes:
+      - securefile-postgres-data:/var/lib/postgresql/data
+      - ./src/main/resources/db/data/001_create_all_tables.sql:/docker-entrypoint-initdb.d/001_create_all_tables.sql:ro
+      - ./src/main/resources/db/data/002_seed_all_tables.sql:/docker-entrypoint-initdb.d/002_seed_all_tables.sql:ro
+
+  localstack:
+    image: localstack/localstack:4
+    container_name: securefile-localstack
+    environment:
+      SERVICES: s3
+      AWS_DEFAULT_REGION: us-east-1
+      DEBUG: "1"
+      PERSISTENCE: "1"
+      SECUREFILE_S3_BUCKET: securefile-statements
+    ports:
+      - "4566:4566"
+    volumes:
+      - securefile-localstack-data:/var/lib/localstack
+      - ./docker/localstack/init/01-create-bucket.sh:/etc/localstack/init/ready.d/01-create-bucket.sh:ro
+
+volumes:
+  securefile-postgres-data:
+  securefile-localstack-data:

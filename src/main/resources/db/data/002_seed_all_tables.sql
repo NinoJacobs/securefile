@@ -9,11 +9,14 @@ VALUES ('admin.user', 'admin@securefile.test', '$2a$10$demoPasswordHashForLocalS
         '+27110000001', (SELECT id FROM roles WHERE name = 'CUSTOMER')),
        ('customer.two', 'customer.two@securefile.test', '$2a$10$demoPasswordHashForLocalSeedDataOnly', 'Liam', 'Naidoo',
         '+27110000002', (SELECT id FROM roles WHERE name = 'CUSTOMER')),
-       ('customer.three', 'customer.three@securefile.test', '$2a$10$demoPasswordHashForLocalSeedDataOnly', 'Mia', 'Khumalo',
+       ('customer.three', 'customer.three@securefile.test', '$2a$10$demoPasswordHashForLocalSeedDataOnly', 'Mia',
+        'Khumalo',
         '+27110000003', (SELECT id FROM roles WHERE name = 'CUSTOMER')),
-       ('customer.four', 'customer.four@securefile.test', '$2a$10$demoPasswordHashForLocalSeedDataOnly', 'Noah', 'Patel',
+       ('customer.four', 'customer.four@securefile.test', '$2a$10$demoPasswordHashForLocalSeedDataOnly', 'Noah',
+        'Patel',
         '+27110000004', (SELECT id FROM roles WHERE name = 'CUSTOMER')),
-       ('customer.five', 'customer.five@securefile.test', '$2a$10$demoPasswordHashForLocalSeedDataOnly', 'Zoe', 'Jacobs',
+       ('customer.five', 'customer.five@securefile.test', '$2a$10$demoPasswordHashForLocalSeedDataOnly', 'Zoe',
+        'Jacobs',
         '+27110000005', (SELECT id FROM roles WHERE name = 'CUSTOMER'));
 
 INSERT INTO customers (user_id, customer_number)

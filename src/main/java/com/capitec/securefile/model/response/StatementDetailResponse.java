@@ -20,6 +20,4 @@ public class StatementDetailResponse {
     String fileName;
     long fileSizeBytes;
     String contentType;
-    String downloadUrl;
-    OffsetDateTime downloadUrlExpiresAt;
 }

@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -37,8 +36,7 @@ public class CustomerStatementsController implements CustomerStatementsApi {
     @GetMapping("/{statementId}/download")
     @Override
     public ResponseEntity<Resource> downloadStatement(
-            @PathVariable String statementId,
-            @RequestParam String token) {
-        return customerStatementsService.downloadStatement(statementId, token);
+            @PathVariable String statementId) {
+        return customerStatementsService.downloadStatement(statementId);
     }
 }

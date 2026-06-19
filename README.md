@@ -109,6 +109,20 @@ Recommended local startup uses Compose.
 
 ### Start Postgres + LocalStack
 
+Before first startup, make the LocalStack init script executable:
+
+```bash
+chmod +x docker/localstack/init/01-create-bucket.sh
+```
+
+If the script was edited with Windows line endings, normalize it:
+
+```bash
+sed -i '' $'s/\r$//' docker/localstack/init/01-create-bucket.sh
+```
+
+LocalStack executes files in `/etc/localstack/init/ready.d` directly, so the bucket init script must have the executable bit set.
+
 ```bash
 docker compose -f docker-compose.yaml up --build
 ```

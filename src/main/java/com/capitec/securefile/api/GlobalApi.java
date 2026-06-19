@@ -17,27 +17,28 @@ import java.lang.annotation.Target;
 @Documented
 @ApiResponses(
         value = {
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Request does not adhere to the expected standard.",
-                    content = @Content),
-            @ApiResponse(
-                    responseCode = "409",
-                    description = "Request cannot be processed.",
-                    content = {
-                        @Content(
-                                mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                schema = @Schema(implementation = Exception.class)
-                        )
-                    }),
-            @ApiResponse(
-                    responseCode = "412",
-                    description = "Server dependency is not available or a handled server error.",
-                    content = {
-                        @Content(
-                                mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                schema = @Schema(implementation = Exception.class)
-                        )
-                    })
+                @ApiResponse(
+                        responseCode = "400",
+                        description = "Request does not adhere to the expected standard.",
+                        content = @Content),
+                @ApiResponse(
+                        responseCode = "409",
+                        description = "Request cannot be processed.",
+                        content = {
+                                @Content(
+                                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                        schema = @Schema(implementation = Exception.class)
+                                )
+                        }),
+                @ApiResponse(
+                        responseCode = "412",
+                        description = "Server dependency is not available or a handled server error.",
+                        content = {
+                                @Content(
+                                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                        schema = @Schema(implementation = Exception.class)
+                                )
+                        })
         })
-public @interface GlobalApi {}
+public @interface GlobalApi {
+}

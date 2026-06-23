@@ -2,6 +2,7 @@ package com.capitec.securefile.api;
 
 import com.capitec.securefile.model.response.StatementDetailResponse;
 import com.capitec.securefile.model.response.StatementSummaryResponse;
+import com.capitec.securefile.model.request.StatementPeriod;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,6 +14,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @GlobalApi
@@ -31,6 +33,12 @@ public interface CustomerStatementsApi {
                             })
             })
     ResponseEntity<List<StatementSummaryResponse>> listStatements();
+
+    @Operation(summary = "Request a statement for the current customer")
+    ResponseEntity<StatementDetailResponse> requestStatement(
+            @Valid StatementPeriod period,
+            LocalDate startDate,
+            LocalDate endDate);
 
     @Operation(summary = "Get a single statement for the current customer")
     @ApiResponses(

@@ -1,9 +1,10 @@
 package com.capitec.securefile.service;
 
-import com.capitec.securefile.database.entity.Customer;
+import com.capitec.securefile.auth.CurrentUser;
 import com.capitec.securefile.database.entity.Statement;
 import com.capitec.securefile.database.repository.StatementRepository;
-import com.capitec.securefile.mapper.StatementApiMapper;
+import com.capitec.securefile.util.mapper.StatementApiMapper;
+import com.capitec.securefile.model.request.StatementPeriod;
 import com.capitec.securefile.model.response.DownloadLinkResponse;
 import com.capitec.securefile.model.response.StatementDetailResponse;
 import com.capitec.securefile.model.response.StatementSummaryResponse;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -27,30 +29,38 @@ public class CustomerStatementsService {
     private final StatementApiMapper statementApiMapper;
     private final StatementDomainSupportService statementDomainSupportService;
     private final StatementDownloadLinkService statementDownloadLinkService;
-    private final StatementDocumentService statementDocumentService;
+    private final StatementGenerationService statementGenerationService;
     private final StatementObjectStorageService statementObjectStorageService;
 
     @Transactional
     public List<StatementSummaryResponse> listMyStatements() {
-        Customer customer = statementDomainSupportService.getCurrentCustomer();
-        return statementRepository.findByCustomerIdOrderByPeriodEndDesc(customer.getId()).stream()
+        Long customerId = CurrentUser.requiredCustomerId();
+        return statementRepository.findByCustomerIdOrderByPeriodEndDesc(customerId).stream()
                 .map(this::toStatementSummaryResponseWithRefreshedDownloadLink)
                 .toList();
     }
 
     @Transactional
+    public StatementDetailResponse requestMyStatement(StatementPeriod period, LocalDate startDate, LocalDate endDate) {
+        Long customerId = CurrentUser.requiredCustomerId();
+        Statement statement = statementGenerationService.generateStatement(customerId, period, startDate, endDate);
+        DownloadLinkResponse downloadLink = refreshDownloadLink(statement);
+        return statementApiMapper.toStatementDetailResponse(statement, downloadLink);
+    }
+
+    @Transactional
     public StatementDetailResponse getMyStatement(String statementId) {
-        Customer customer = statementDomainSupportService.getCurrentCustomer();
-        Statement statement = statementDomainSupportService.findStatementForCustomer(statementId, customer.getId());
+        Long customerId = CurrentUser.requiredCustomerId();
+        Statement statement = statementDomainSupportService.findStatementForCustomer(statementId, customerId);
         DownloadLinkResponse downloadLink = refreshDownloadLink(statement);
         return statementApiMapper.toStatementDetailResponse(statement, downloadLink);
     }
 
     @Transactional
     public ResponseEntity<Resource> downloadStatement(String statementId, String token) {
-        Customer customer = statementDomainSupportService.getCurrentCustomer();
-        Statement statement = statementDomainSupportService.findStatementForCustomer(statementId, customer.getId());
-        statementDownloadLinkService.validateDownloadToken(token, statement, customer.getId());
+        Long customerId = CurrentUser.requiredCustomerId();
+        Statement statement = statementDomainSupportService.findStatementForCustomer(statementId, customerId);
+        statementDownloadLinkService.validateDownloadToken(token, statement, customerId);
 
         byte[] content = loadOrCreateStatementObject(statement);
         Resource resource = new ByteArrayResource(content);
@@ -81,8 +91,12 @@ public class CustomerStatementsService {
             return statementObjectStorageService.loadStatement(statement.getFileKey());
         }
 
-        byte[] generatedContent = statementDocumentService.createStatementDocument(statement);
-        statementObjectStorageService.storeStatement(statement.getFileKey(), statement.getContentType(), generatedContent);
+        byte[] generatedContent = statementGenerationService.createStatementDocument(statement);
+        StatementObjectStorageService.StoredStatementObject storedObject =
+                statementObjectStorageService.storeStatement(statement.getFileKey(), statement.getContentType(), generatedContent);
+        statement.setFileSizeBytes(storedObject.fileSizeBytes());
+        statement.setChecksum(storedObject.checksum());
+        statementRepository.save(statement);
         return generatedContent;
     }
 }

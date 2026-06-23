@@ -2,7 +2,7 @@ spring:
   application:
     name: securefile
   datasource:
-    url: jdbc:postgresql://localhost:5433/securefile
+    url: jdbc:postgresql://localhost:5432/securefile
     username: admin
     password: admin
   jpa:

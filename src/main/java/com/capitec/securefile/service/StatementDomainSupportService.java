@@ -1,8 +1,6 @@
 package com.capitec.securefile.service;
 
-import com.capitec.securefile.database.entity.Customer;
 import com.capitec.securefile.database.entity.Statement;
-import com.capitec.securefile.database.repository.CustomerRepository;
 import com.capitec.securefile.database.repository.StatementRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,23 +15,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @RequiredArgsConstructor
 public class StatementDomainSupportService {
 
-    private final CustomerRepository customerRepository;
     private final StatementRepository statementRepository;
-
-    @Transactional(readOnly = true)
-    public Customer getCurrentCustomer() {
-        // Temporary until authentication exists. Keeps /customers/me usable with seeded data.
-        return customerRepository.findFirstByOrderByIdAsc()
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "No customer found"));
-    }
-
-    @Transactional(readOnly = true)
-    public Customer findCustomer(String customerId) {
-        return parseLong(customerId)
-                .flatMap(customerRepository::findById)
-                .or(() -> customerRepository.findByCustomerNumber(customerId))
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Customer not found"));
-    }
 
     @Transactional(readOnly = true)
     public Statement findStatementForCustomer(String statementId, Long customerId) {

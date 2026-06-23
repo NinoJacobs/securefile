@@ -11,6 +11,13 @@ public interface StatementRepository extends JpaRepository<Statement, Long> {
 
     Optional<Statement> findByIdAndCustomerId(Long id, Long customerId);
 
+    Optional<Statement> findByCustomerIdAndAccountIdAndPeriodStartAndPeriodEnd(
+            Long customerId,
+            Long accountId,
+            LocalDate periodStart,
+            LocalDate periodEnd
+    );
+
     List<Statement> findByCustomerIdOrderByPeriodEndDesc(Long customerId);
 
     List<Statement> findByCustomerIdAndPeriodStartGreaterThanEqualAndPeriodEndLessThanEqualOrderByPeriodEndDesc(

@@ -9,11 +9,14 @@ What is implemented now:
 ```text
 - PostgreSQL-backed customer and statement data
 - Admin API to list customers
-- Admin API to list statements for a customer
-- Admin API to generate a fake statement object for a customer and upload it to LocalStack S3
+- Admin API to generate period-based statements from customer account transactions
 - Customer API to list statements
+- Customer API to request statements for 1 month, 3 months, 6 months, 9 months, or a custom date range
 - Customer API to get a statement detail response that already includes a fresh download link
 - Customer API to download a statement from LocalStack S3 using the signed token
+- JWT login backed by users.password_hash
+- Admin/customer endpoint protection by role
+- PDF generation with Apache PDFBox
 - Local PostgreSQL container image
 - LocalStack configured for S3 emulation
 ```
@@ -21,20 +24,18 @@ What is implemented now:
 What is not implemented yet:
 
 ```text
-- Real authentication and authorization
-- Real PDF generation workflow
 - Persisted download links
 ```
 
 ## Target Direction
 
-The intended product direction is no longer admin-uploaded statement files as the primary workflow.
+Statements are generated from customer account and transaction data.
 
 The target system should behave more like a real banking statement service:
 
 ```text
 - Customer account and transaction data already exist in the system
-- A customer requests a statement for a period such as 1 month, 3 months, 6 months, or a custom date range
+- A customer requests a statement for a period such as 1 month, 3 months, 6 months, 9 months, or a custom date range
 - The backend generates a PDF statement from the underlying account transaction data
 - The generated PDF is stored in S3-compatible object storage
 - The database stores statement metadata plus the object key
@@ -44,10 +45,9 @@ The target system should behave more like a real banking statement service:
 What this means for the current codebase:
 
 ```text
-- The current LocalStack S3 integration and object-key storage approach still fit the target design
-- The current admin upload/generate flow is only a temporary placeholder
-- The long-term source of truth for statements should be account and transaction data, not manually uploaded files
-- Statement generation should become period-based and data-driven
+- The current LocalStack S3 integration and object-key storage approach fits the design
+- Account and transaction data are the source of truth for generated statements
+- Statement generation is period-based and data-driven
 ```
 
 Important storage note:
@@ -83,6 +83,9 @@ Database schema and seed scripts:
 ```text
 src/main/resources/db/data/001_create_all_tables.sql
 src/main/resources/db/data/002_seed_all_tables.sql
+src/main/resources/db/data/003_seed_all_tables_for_customer_1.sql
+src/main/resources/db/data/004_seed_all_tables_for_customer_2.sql
+src/main/resources/db/data/005_seed_all_tables_for_customer_3.sql
 ```
 
 LocalStack init script:
@@ -99,8 +102,9 @@ Main tables:
 roles
 users
 customers
+accounts
+account_transactions
 statements
-statement_generation_requests
 ```
 
 Relationships:
@@ -108,16 +112,21 @@ Relationships:
 ```text
 users.role_id -> roles.id
 customers.user_id -> users.id
+accounts.customer_id -> customers.id
+account_transactions.account_id -> accounts.id
 statements.customer_id -> customers.id
+statements.account_id -> accounts.id
 ```
 
 Seed data:
 
 ```text
 2 roles
-6 users
-5 customers
-15 statements
+4 users
+3 customers
+3 accounts
+300 transactions
+12 statements
 ```
 
 ## Local Infrastructure
@@ -154,7 +163,7 @@ docker compose -f docker-compose.yaml up --build
 Services:
 
 ```text
-PostgreSQL: localhost:5433
+PostgreSQL: localhost:5432
 LocalStack: localhost:4566
 Bucket:     securefile-statements
 ```
@@ -183,7 +192,7 @@ Those scripts run only when the postgres data volume is empty.
 
 ```text
 Host: localhost
-Port: 5433
+Port: 5432
 Database: securefile
 Username: admin
 Password: admin
@@ -192,7 +201,7 @@ Password: admin
 ### Verify Postgres
 
 ```bash
-PGPASSWORD=admin psql -h localhost -p 5433 -U admin -d securefile
+PGPASSWORD=admin psql -h localhost -p 5432 -U admin -d securefile
 ```
 
 ### Verify LocalStack S3
@@ -222,7 +231,7 @@ Current local config in [application.yaml](/Users/NinoJacobs/Capitec/dev/securef
 ```yaml
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/securefile
+    url: jdbc:postgresql://localhost:5432/securefile
     username: admin
     password: admin
   jpa:
@@ -247,18 +256,82 @@ Storage mapping:
 statements.file_key -> S3 object key inside securefile.s3.bucket
 ```
 
+## Authentication
+
+Login:
+
+```http
+POST /api/v1/auth/login
+```
+
+Request:
+
+```json
+{
+  "username": "admin.user",
+  "password": "password"
+}
+```
+
+Response:
+
+```json
+{
+  "tokenType": "Bearer",
+  "accessToken": "<jwt>",
+  "expiresAt": "2026-06-23T12:00:00Z"
+}
+```
+
+Use the token on protected requests:
+
+```http
+Authorization: Bearer <jwt>
+```
+
+Customer JWT claims include customer identity:
+
+```json
+{
+  "sub": "customer.one",
+  "roles": ["ROLE_CUSTOMER"],
+  "customerId": 1,
+  "customerNumber": "CUST-0001",
+  "exp": 1782216000
+}
+```
+
+Admin JWTs do not include `customerId` or `customerNumber`.
+
+Local users:
+
+```text
+admin.user      -> ADMIN
+customer.one    -> CUSTOMER
+customer.two    -> CUSTOMER
+customer.three  -> CUSTOMER
+```
+
+All seeded local users use password:
+
+```text
+password
+```
+
+Role access:
+
+```text
+CUSTOMER users can access /api/v1/customers/me/**
+ADMIN users can access /api/v1/admin/**
+The /customers/me customer is resolved from the JWT customerId claim.
+```
+
 ## Customer Endpoints
 
 Base path:
 
 ```text
 /api/v1/customers/me/statements
-```
-
-Current auth limitation:
-
-```text
-/customers/me currently resolves to the first customer in the database.
 ```
 
 ### List My Statements
@@ -277,12 +350,45 @@ Fields:
 
 ```text
 statementId
+statementName
 customerId
 accountNumberMasked
 periodStart
 periodEnd
 generatedAt
-status
+downloadUrl
+downloadUrlExpiresAt
+```
+
+### Request My Statement
+
+```http
+POST /api/v1/customers/me/statements/generate?period=ONE_MONTH
+POST /api/v1/customers/me/statements/generate?period=THREE_MONTHS
+POST /api/v1/customers/me/statements/generate?period=SIX_MONTHS
+POST /api/v1/customers/me/statements/generate?period=NINE_MONTHS
+POST /api/v1/customers/me/statements/generate?period=CUSTOM&startMonth=2026-01&endMonth=2026-03
+```
+
+Supported `period` values:
+
+```text
+ONE_MONTH
+THREE_MONTHS
+SIX_MONTHS
+NINE_MONTHS
+CUSTOM
+```
+
+Behavior:
+
+```text
+Generates the statement PDF from account_transactions for the selected period.
+Custom statements use only year and month input. The generated period starts on the first day of startMonth and ends on the last day of endMonth.
+Does not create a statement when there are no account_transactions in the selected period.
+Stores the PDF in S3-compatible object storage.
+Stores statement metadata in statements.
+Returns StatementDetailResponse with a fresh temporary download link.
 ```
 
 ### Get Statement Detail
@@ -301,12 +407,12 @@ Fields:
 
 ```text
 statementId
+statementName
 customerId
 accountNumberMasked
 periodStart
 periodEnd
 generatedAt
-status
 fileName
 fileSizeBytes
 contentType
@@ -365,10 +471,11 @@ username
 email
 ```
 
-### List Statements For Customer
+### Generate Statement For Customer
 
 ```http
-GET /api/v1/admin/customers/{customerId}/statements
+POST /api/v1/admin/customers/{customerId}/statements/generate
+POST /api/v1/admin/customers/{customerId}/statements/generate?period=CUSTOM&startDate=2026-01-01&endDate=2026-03-31
 ```
 
 `customerId` can currently be either:
@@ -378,26 +485,14 @@ numeric customers.id
 customer_number like CUST-0001
 ```
 
-Returns:
+Behavior:
 
 ```text
-List<StatementSummaryResponse>
-```
-
-### Generate Statement For Customer
-
-```http
-POST /api/v1/admin/customers/{customerId}/statements/generate
-```
-
-Current behavior:
-
-```text
-Creates a fake statement row immediately.
-Uses randomized generatedAt data within the last 30 days.
+Generates a PDF from the customer's active account transactions.
+Supports ONE_MONTH, THREE_MONTHS, SIX_MONTHS, NINE_MONTHS, and CUSTOM date ranges.
+Stores the generated PDF in object storage.
 Returns StatementDetailResponse.
 Does not queue a background generation job.
-Does not require a request body.
 ```
 
 ## Service Split
@@ -440,12 +535,7 @@ Recommended next steps:
 
 ```text
 Set up Liquibase for versioned schema migrations and reference-data bootstrap.
-Add authentication and replace the temporary first-customer lookup.
-Protect admin endpoints by role.
-Introduce account and transaction domain tables as the source data for statement generation.
-Replace the temporary admin upload/generate flow with period-based statement generation from account transactions.
-Support customer statement requests for 1 month, 3 months, 6 months, and custom date ranges.
-Replace the hand-built PDF generation with Apache PDFBox.
+Add a scheduler to refresh standard 1 month, 3 month, 6 month, and 9 month statement records.
 Add integration tests that match the current database-backed API.
 Move local secrets out of application.yaml for non-local environments.
 ```

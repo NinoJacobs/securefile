@@ -1,5 +1,5 @@
 package com.capitec.securefile.database.entity;
-import jakarta.persistence.Column;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -16,7 +16,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -25,8 +25,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "statements")
-public class Statement {
+@Table(name = "accounts")
+public class Account {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,29 +36,13 @@ public class Statement {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "account_id", nullable = false)
-    private Account account;
-    
-    private String statementName;
+    private String accountNumber;
 
-    private LocalDate periodStart;
+    private String accountType;
 
-    private LocalDate periodEnd;
+    private BigDecimal currentBalance;
 
-    private String fileKey;
-
-    private String fileName;
-
-    private Long fileSizeBytes;
-
-    private String contentType;
-
-    private String checksum;
-
-    private LocalDateTime generatedAt;
-
-    private LocalDateTime downloadLinkExpiresAt;
+    private String status;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

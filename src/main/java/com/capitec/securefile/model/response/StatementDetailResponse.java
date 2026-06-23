@@ -9,6 +9,7 @@ import java.time.OffsetDateTime;
 @Builder
 public class StatementDetailResponse {
     String statementId;
+    String statementName;
     String customerId;
     String accountNumberMasked;
     LocalDate periodStart;

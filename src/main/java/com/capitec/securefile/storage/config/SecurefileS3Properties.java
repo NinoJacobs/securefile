@@ -1,4 +1,4 @@
-package com.capitec.securefile.config;
+package com.capitec.securefile.storage.config;
 
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;

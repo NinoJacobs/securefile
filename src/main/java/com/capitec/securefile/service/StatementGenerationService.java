@@ -8,6 +8,7 @@ import com.capitec.securefile.database.repository.AccountRepository;
 import com.capitec.securefile.database.repository.AccountTransactionRepository;
 import com.capitec.securefile.database.repository.StatementRepository;
 import com.capitec.securefile.model.request.StatementPeriod;
+import com.capitec.securefile.storage.service.StatementObjectStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

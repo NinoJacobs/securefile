@@ -66,6 +66,15 @@ Main API contracts:
 src/main/java/com/capitec/securefile/api
 ```
 
+Authentication:
+
+```text
+src/main/java/com/capitec/securefile/auth/controller
+src/main/java/com/capitec/securefile/auth/model
+src/main/java/com/capitec/securefile/auth/security
+src/main/java/com/capitec/securefile/auth/service
+```
+
 Controllers:
 
 ```text
@@ -76,6 +85,21 @@ Services:
 
 ```text
 src/main/java/com/capitec/securefile/service
+```
+
+Storage:
+
+```text
+src/main/java/com/capitec/securefile/storage/config
+src/main/java/com/capitec/securefile/storage/service
+```
+
+Common:
+
+```text
+src/main/java/com/capitec/securefile/common/exception
+src/main/java/com/capitec/securefile/common/mapper
+src/main/java/com/capitec/securefile/common/util
 ```
 
 Database schema and seed scripts:

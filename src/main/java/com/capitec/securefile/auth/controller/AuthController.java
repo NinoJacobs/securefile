@@ -1,8 +1,8 @@
-package com.capitec.securefile.auth;
+package com.capitec.securefile.auth.controller;
 
-import com.capitec.securefile.model.request.LoginRequest;
-import com.capitec.securefile.model.response.LoginResponse;
-import com.capitec.securefile.service.AuthService;
+import com.capitec.securefile.auth.model.LoginRequest;
+import com.capitec.securefile.auth.model.LoginResponse;
+import com.capitec.securefile.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

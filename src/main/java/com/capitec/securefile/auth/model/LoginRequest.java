@@ -1,4 +1,4 @@
-package com.capitec.securefile.model.request;
+package com.capitec.securefile.auth.model;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

@@ -1,13 +1,14 @@
 package com.capitec.securefile.service;
 
-import com.capitec.securefile.auth.CurrentUser;
+import com.capitec.securefile.common.util.CurrentUser;
 import com.capitec.securefile.database.entity.Statement;
 import com.capitec.securefile.database.repository.StatementRepository;
-import com.capitec.securefile.util.mapper.StatementApiMapper;
+import com.capitec.securefile.common.mapper.StatementApiMapper;
 import com.capitec.securefile.model.request.StatementPeriod;
 import com.capitec.securefile.model.response.DownloadLinkResponse;
 import com.capitec.securefile.model.response.StatementDetailResponse;
 import com.capitec.securefile.model.response.StatementSummaryResponse;
+import com.capitec.securefile.storage.service.StatementObjectStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;

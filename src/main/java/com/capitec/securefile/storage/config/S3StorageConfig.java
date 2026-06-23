@@ -1,4 +1,4 @@
-package com.capitec.securefile.config;
+package com.capitec.securefile.storage.config;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

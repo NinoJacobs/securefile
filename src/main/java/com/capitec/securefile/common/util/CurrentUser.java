@@ -1,4 +1,4 @@
-package com.capitec.securefile.auth;
+package com.capitec.securefile.common.util;
 
 import com.capitec.securefile.auth.security.SecurefilePrincipal;
 import org.springframework.security.core.Authentication;

@@ -1,7 +1,7 @@
-package com.capitec.securefile.auth;
+package com.capitec.securefile.auth.security;
 
 import com.capitec.securefile.auth.security.SecurefilePrincipal;
-import com.capitec.securefile.service.JwtService;
+import com.capitec.securefile.auth.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

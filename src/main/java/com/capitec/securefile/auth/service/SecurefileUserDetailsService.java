@@ -1,4 +1,4 @@
-package com.capitec.securefile.service;
+package com.capitec.securefile.auth.service;
 
 import com.capitec.securefile.database.entity.User;
 import com.capitec.securefile.database.repository.UserRepository;

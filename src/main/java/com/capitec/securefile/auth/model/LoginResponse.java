@@ -1,4 +1,4 @@
-package com.capitec.securefile.model.response;
+package com.capitec.securefile.auth.model;
 
 import lombok.Builder;
 import lombok.Value;

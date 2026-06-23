@@ -1,4 +1,4 @@
-package com.capitec.securefile.util.mapper;
+package com.capitec.securefile.common.mapper;
 
 import com.capitec.securefile.database.entity.Customer;
 import com.capitec.securefile.database.entity.Statement;

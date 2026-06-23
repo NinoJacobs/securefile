@@ -1,6 +1,6 @@
-package com.capitec.securefile.service;
+package com.capitec.securefile.storage.service;
 
-import com.capitec.securefile.config.SecurefileS3Properties;
+import com.capitec.securefile.storage.config.SecurefileS3Properties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;

@@ -8,6 +8,24 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
 
 securefile:
   s3:
@@ -17,4 +35,3 @@ securefile:
     access-key: test
     secret-key: test
     path-style-access-enabled: true
-

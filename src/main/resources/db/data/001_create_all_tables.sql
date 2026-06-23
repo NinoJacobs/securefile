@@ -81,7 +81,9 @@ CREATE TABLE statements
     generated_at    TIMESTAMP,
     download_link_expires_at TIMESTAMP,
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uk_statements_customer_account_period
+        UNIQUE (customer_id, account_id, period_start, period_end)
 );
 
 CREATE INDEX idx_statements_customer_id

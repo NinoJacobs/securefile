@@ -10,8 +10,12 @@ import com.capitec.securefile.database.repository.StatementRepository;
 import com.capitec.securefile.model.request.StatementPeriod;
 import com.capitec.securefile.storage.service.StatementObjectStorageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -32,6 +36,7 @@ public class StatementGenerationService {
     private final StatementRepository statementRepository;
     private final StatementDocumentService statementDocumentService;
     private final StatementObjectStorageService statementObjectStorageService;
+    private final PlatformTransactionManager transactionManager;
 
     @Transactional
     public Statement generateStatement(Long customerId, StatementPeriod period, LocalDate startDate, LocalDate endDate) {
@@ -46,11 +51,7 @@ public class StatementGenerationService {
         StatementPeriod selectedPeriod = period == null ? StatementPeriod.ONE_MONTH : period;
         DateRange dateRange = resolveDateRange(selectedPeriod, startDate, endDate);
 
-        return statementRepository.findByCustomerIdAndAccountIdAndPeriodStartAndPeriodEnd(
-                        customer.getId(),
-                        account.getId(),
-                        dateRange.start(),
-                        dateRange.end())
+        return findExistingStatement(customer, account, dateRange)
                 .orElseGet(() -> createStatement(customer, account, selectedPeriod, dateRange));
     }
 
@@ -82,13 +83,35 @@ public class StatementGenerationService {
                 .generatedAt(generatedAt)
                 .build();
 
-        byte[] content = statementDocumentService.createStatementDocument(statement, transactions);
-        StatementObjectStorageService.StoredStatementObject storedObject =
-                statementObjectStorageService.storeStatement(fileKey, statement.getContentType(), content);
+        Statement savedStatement;
+        try {
+            savedStatement = saveStatementInNewTransaction(statement);
+        } catch (DataIntegrityViolationException ex) {
+            return findExistingStatement(customer, account, dateRange)
+                    .orElseThrow(() -> ex);
+        }
 
-        statement.setFileSizeBytes(storedObject.fileSizeBytes());
-        statement.setChecksum(storedObject.checksum());
-        return statementRepository.save(statement);
+        byte[] content = statementDocumentService.createStatementDocument(savedStatement, transactions);
+        StatementObjectStorageService.StoredStatementObject storedObject =
+                statementObjectStorageService.storeStatement(fileKey, savedStatement.getContentType(), content);
+
+        savedStatement.setFileSizeBytes(storedObject.fileSizeBytes());
+        savedStatement.setChecksum(storedObject.checksum());
+        return statementRepository.save(savedStatement);
+    }
+
+    private Statement saveStatementInNewTransaction(Statement statement) {
+        TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+        transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        return transactionTemplate.execute(status -> statementRepository.saveAndFlush(statement));
+    }
+
+    private java.util.Optional<Statement> findExistingStatement(Customer customer, Account account, DateRange dateRange) {
+        return statementRepository.findByCustomerIdAndAccountIdAndPeriodStartAndPeriodEnd(
+                customer.getId(),
+                account.getId(),
+                dateRange.start(),
+                dateRange.end());
     }
 
     private String statementName(StatementPeriod period, String periodSuffix) {

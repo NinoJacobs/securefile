@@ -1,0 +1,62 @@
+name: Pull Request Sync
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-sync-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    name: Sync PR Changes
+    if: github.event_name == 'workflow_dispatch' || github.event.action != 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run build and test checks
+        run: ./gradlew check bootJar
+
+      - name: Validate Docker Compose config
+        run: docker compose config
+
+      - name: Mock sync
+        run: |
+          echo "Sync would run here."
+          echo "Event: ${{ github.event_name }}"
+          echo "Action: ${{ github.event.action || 'manual' }}"
+
+  closed-sync:
+    name: Sync PR Closed
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Mock closed sync
+        run: |
+          echo "PR closed sync would run here."
+          echo "PR: #${{ github.event.pull_request.number }}"
+          echo "Merged: ${{ github.event.pull_request.merged }}"
+          echo "Head SHA: ${{ github.event.pull_request.head.sha }}"

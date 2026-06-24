@@ -119,8 +119,7 @@ curl http://localhost:8080/actuator/health/readiness
 - Add Liquibase or Flyway for versioned schema migrations and reference data.
 - Add real integration tests with Testcontainers for PostgreSQL and LocalStack.
 - Add GitHub Actions workflows for pull request build, test, and quality checks.
-- Add a Dockerfile for the application image.
-- Split configuration by profile: local, test, and production.
+- Split configuration by profile: local, test
 - Harden JWT handling with issuer, audience, stronger secret management, and short token TTLs.
 - Add structured logging and request correlation IDs.
 - Add metrics for statement generation, downloads, S3 failures, and database failures.

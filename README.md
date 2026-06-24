@@ -122,7 +122,6 @@ curl http://localhost:8080/actuator/health/readiness
 - Add a Dockerfile for the application image.
 - Split configuration by profile: local, test, and production.
 - Move secrets out of `application.yaml` and fail fast when required secrets are missing.
-- Expose OpenAPI documentation and keep request/response examples current.
 - Harden JWT handling with issuer, audience, stronger secret management, and short token TTLs.
 - Add login rate limiting.
 - Add structured logging and request correlation IDs.

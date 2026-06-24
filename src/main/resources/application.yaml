@@ -27,6 +27,12 @@ management:
     readinessstate:
       enabled: true
 
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
 securefile:
   s3:
     endpoint: http://localhost:4566

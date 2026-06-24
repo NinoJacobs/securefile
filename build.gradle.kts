@@ -35,8 +35,9 @@ dependencies {
 	// JSON serialization used by the JWT service.
 	implementation("com.fasterxml.jackson.core:jackson-databind")
 
-	// OpenAPI annotations for API documentation metadata.
+	// OpenAPI
 	implementation("io.swagger.core.v3:swagger-annotations-jakarta:2.2.39")
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3")
 
 	// Type-safe DTO/entity mapping.
 	implementation("org.mapstruct:mapstruct:1.6.3")

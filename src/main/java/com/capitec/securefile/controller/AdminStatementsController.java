@@ -5,6 +5,7 @@ import com.capitec.securefile.model.request.StatementPeriod;
 import com.capitec.securefile.model.response.AdminCustomerResponse;
 import com.capitec.securefile.model.response.StatementDetailResponse;
 import com.capitec.securefile.service.AdminStatementsService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
+@Tag(name = "Admin")
 public class AdminStatementsController implements AdminStatementsApi {
     private final AdminStatementsService adminStatementsService;
 

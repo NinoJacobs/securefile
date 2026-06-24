@@ -5,6 +5,7 @@ import com.capitec.securefile.model.request.StatementPeriod;
 import com.capitec.securefile.model.response.StatementDetailResponse;
 import com.capitec.securefile.model.response.StatementSummaryResponse;
 import com.capitec.securefile.service.CustomerStatementsService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/customers/me/statements")
 @RequiredArgsConstructor
+@Tag(name = "Customer")
 public class CustomerStatementsController implements CustomerStatementsApi {
 
     private final CustomerStatementsService customerStatementsService;

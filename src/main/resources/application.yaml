@@ -2,9 +2,9 @@ spring:
   application:
     name: securefile
   datasource:
-    url: jdbc:postgresql://localhost:5432/securefile
-    username: admin
-    password: admin
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: none
@@ -34,10 +34,15 @@ springdoc:
     path: /swagger-ui.html
 
 securefile:
+  jwt:
+    secret: ${SECUREFILE_JWT_SECRET}
+    ttl-minutes: ${SECUREFILE_JWT_TTL_MINUTES:60}
+  download-link:
+    secret: ${SECUREFILE_DOWNLOAD_LINK_SECRET}
   s3:
-    endpoint: http://localhost:4566
-    region: us-east-1
-    bucket: securefile-statements
-    access-key: test
-    secret-key: test
-    path-style-access-enabled: true
+    endpoint: ${SECUREFILE_S3_ENDPOINT}
+    region: ${SECUREFILE_S3_REGION}
+    bucket: ${SECUREFILE_S3_BUCKET}
+    access-key: ${SECUREFILE_S3_ACCESS_KEY}
+    secret-key: ${SECUREFILE_S3_SECRET_KEY}
+    path-style-access-enabled: ${SECUREFILE_S3_PATH_STYLE_ACCESS_ENABLED:true}

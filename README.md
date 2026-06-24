@@ -121,12 +121,11 @@ curl http://localhost:8080/actuator/health/readiness
 - Add GitHub Actions workflows for pull request build, test, and quality checks.
 - Add a Dockerfile for the application image.
 - Split configuration by profile: local, test, and production.
-- Move secrets out of `application.yaml` and fail fast when required secrets are missing.
 - Harden JWT handling with issuer, audience, stronger secret management, and short token TTLs.
-- Add login rate limiting.
 - Add structured logging and request correlation IDs.
 - Add metrics for statement generation, downloads, S3 failures, and database failures.
-- Add pagination, sorting, and filtering for statement listing.
+
+## out of scope
+- Add login rate limiting.
 - Add a scheduler to refresh standard 1 month, 3 month, 6 month, and 9 month statements.
-- Add static formatting/linting checks such as Spotless or Checkstyle.
 - Add dependency vulnerability scanning in CI.

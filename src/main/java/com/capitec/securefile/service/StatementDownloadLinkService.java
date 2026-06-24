@@ -2,7 +2,6 @@ package com.capitec.securefile.service;
 
 import com.capitec.securefile.database.entity.Statement;
 import com.capitec.securefile.model.response.DownloadLinkResponse;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -23,8 +22,11 @@ public class StatementDownloadLinkService {
     private static final int DOWNLOAD_LINK_TTL_MINUTES = 1;
     private static final String HMAC_ALGORITHM = "HmacSHA256";
 
-    @Value("${securefile.download-link.secret:local-dev-download-link-secret-change-me}")
-    private String downloadLinkSecret;
+    private final String downloadLinkSecret;
+
+    public StatementDownloadLinkService(DownloadLinkProperties properties) {
+        this.downloadLinkSecret = properties.secret();
+    }
 
     public DownloadLinkResponse refreshDownloadLink(Statement statement) {
         LocalDateTime expiresAt = LocalDateTime.now(ZoneOffset.UTC).plusMinutes(DOWNLOAD_LINK_TTL_MINUTES);

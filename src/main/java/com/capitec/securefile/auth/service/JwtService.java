@@ -1,10 +1,10 @@
 package com.capitec.securefile.auth.service;
 
+import com.capitec.securefile.auth.config.JwtProperties;
 import com.capitec.securefile.database.entity.Customer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,13 +33,10 @@ public class JwtService {
     private final String jwtSecret;
     private final long ttlMinutes;
 
-    public JwtService(
-            ObjectMapper objectMapper,
-            @Value("${securefile.jwt.secret:local-dev-jwt-secret-change-me}") String jwtSecret,
-            @Value("${securefile.jwt.ttl-minutes:60}") long ttlMinutes) {
+    public JwtService(ObjectMapper objectMapper, JwtProperties properties) {
         this.objectMapper = objectMapper;
-        this.jwtSecret = jwtSecret;
-        this.ttlMinutes = ttlMinutes;
+        this.jwtSecret = properties.secret();
+        this.ttlMinutes = properties.ttlMinutes();
     }
 
     public IssuedToken issueToken(UserDetails userDetails, Customer customer) {

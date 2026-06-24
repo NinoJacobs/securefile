@@ -1,11 +1,11 @@
 package com.capitec.securefile.auth.service;
 
+import com.capitec.securefile.auth.model.LoginRequest;
+import com.capitec.securefile.auth.model.LoginResponse;
 import com.capitec.securefile.database.entity.Customer;
 import com.capitec.securefile.database.entity.User;
 import com.capitec.securefile.database.repository.CustomerRepository;
 import com.capitec.securefile.database.repository.UserRepository;
-import com.capitec.securefile.auth.model.LoginRequest;
-import com.capitec.securefile.auth.model.LoginResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;

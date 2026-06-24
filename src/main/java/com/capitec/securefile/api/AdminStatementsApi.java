@@ -1,20 +1,15 @@
 package com.capitec.securefile.api;
 
 import com.capitec.securefile.model.response.AdminCustomerResponse;
-import com.capitec.securefile.model.request.StatementPeriod;
-import com.capitec.securefile.model.response.StatementDetailResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @GlobalApi

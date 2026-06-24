@@ -17,6 +17,14 @@ import java.time.ZoneOffset;
 @Mapper(componentModel = "spring")
 public interface StatementApiMapper {
 
+    @Named("maskAccountNumber")
+    static String maskAccountNumber(String accountNumber) {
+        if (accountNumber == null || accountNumber.length() <= 4) {
+            return "****";
+        }
+        return "****" + accountNumber.substring(accountNumber.length() - 4);
+    }
+
     @Mapping(target = "customerId", source = "id")
     @Mapping(target = "username", source = "user.username")
     @Mapping(target = "email", source = "user.email")
@@ -41,14 +49,6 @@ public interface StatementApiMapper {
 
     default String map(Long value) {
         return value == null ? null : value.toString();
-    }
-
-    @Named("maskAccountNumber")
-    static String maskAccountNumber(String accountNumber) {
-        if (accountNumber == null || accountNumber.length() <= 4) {
-            return "****";
-        }
-        return "****" + accountNumber.substring(accountNumber.length() - 4);
     }
 
     default OffsetDateTime map(LocalDateTime value) {

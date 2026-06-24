@@ -1,9 +1,9 @@
 package com.capitec.securefile.service;
 
+import com.capitec.securefile.common.mapper.StatementApiMapper;
 import com.capitec.securefile.common.util.CurrentUser;
 import com.capitec.securefile.database.entity.Statement;
 import com.capitec.securefile.database.repository.StatementRepository;
-import com.capitec.securefile.common.mapper.StatementApiMapper;
 import com.capitec.securefile.model.request.StatementPeriod;
 import com.capitec.securefile.model.response.DownloadLinkResponse;
 import com.capitec.securefile.model.response.StatementDetailResponse;
@@ -19,8 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor

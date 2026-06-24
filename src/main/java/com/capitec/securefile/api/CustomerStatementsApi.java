@@ -1,8 +1,8 @@
 package com.capitec.securefile.api;
 
+import com.capitec.securefile.model.request.StatementPeriod;
 import com.capitec.securefile.model.response.StatementDetailResponse;
 import com.capitec.securefile.model.response.StatementSummaryResponse;
-import com.capitec.securefile.model.request.StatementPeriod;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

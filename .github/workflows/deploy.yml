@@ -1,4 +1,4 @@
-name: Pull Request Sync
+name: Deploy
 
 on:
   pull_request:

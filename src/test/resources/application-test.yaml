@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:securefile-test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password: test
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+securefile:
+  jwt:
+    secret: test-jwt-secret-change-me
+    ttl-minutes: 5
+    refresh-secret: test-jwt-refresh-secret-change-me
+    refresh-ttl-minutes: 10080
+    issuer: securefile-auth-test
+    audience: securefile-api-test
+  download-link:
+    secret: test-download-link-secret-change-me
+  s3:
+    endpoint: http://localhost:4566
+    region: us-east-1
+    bucket: securefile-statements-test
+    access-key: test
+    secret-key: test
+    path-style-access-enabled: true

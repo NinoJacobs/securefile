@@ -2,16 +2,14 @@ name: Java Container Workflow
 
 on:
   pull_request:
+    branches:
+      - master
     types:
       - opened
       - reopened
       - synchronize
       - ready_for_review
-  push:
-    branches:
-      - master
-  workflow_dispatch:
-#test-sync
+      - closed
 permissions:
   contents: read
   pull-requests: read
@@ -24,7 +22,7 @@ concurrency:
 jobs:
   build-application:
     name: Build Application
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
     runs-on: ubuntu-latest
 
     steps:
@@ -39,7 +37,7 @@ jobs:
 
   quality-checks:
     name: Quality Checks
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
     runs-on: ubuntu-latest
     needs:
       - build-application
@@ -56,7 +54,7 @@ jobs:
 
   build-container:
     name: Build Container
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
     runs-on: ubuntu-latest
     needs:
       - quality-checks
@@ -73,7 +71,7 @@ jobs:
 
   build-release-artifact:
     name: Build Release Artifact
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     env:
       SECUREFILE_JWT_SECRET: ${{ secrets.SECUREFILE_JWT_SECRET }}
@@ -96,7 +94,7 @@ jobs:
 
   build-and-push-container:
     name: Build And Push Container
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     needs:
       - build-release-artifact
@@ -120,8 +118,8 @@ jobs:
           echo "Promoted image tag: ${{ steps.image-tag.outputs.image_tag }}"
 
   deploy-int:
-    name: Deploy Integration
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    name: Deploy INT - Await Approval
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     needs:
       - build-and-push-container
@@ -140,9 +138,15 @@ jobs:
           echo "Result: deployed to integration"
           echo "Image tag: ${{ needs.build-and-push-container.outputs.image_tag }}"
 
+      - name: Force INT deployment failure
+        if: vars.FORCE_DEPLOY_FAILURE == 'int'
+        run: |
+          echo "Forced INT deployment failure requested."
+          exit 1
+
   deploy-qa:
-    name: Deploy QA
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    name: Deploy QA - Await Approval
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     needs:
       - build-and-push-container
@@ -163,9 +167,15 @@ jobs:
           echo "Result: deployed to QA"
           echo "Image tag: ${{ needs.build-and-push-container.outputs.image_tag }}"
 
+      - name: Force QA deployment failure
+        if: vars.FORCE_DEPLOY_FAILURE == 'qa'
+        run: |
+          echo "Forced QA deployment failure requested."
+          exit 1
+
   deploy-prod:
-    name: Deploy Production
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    name: Deploy PROD - Await Approval
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     needs:
       - build-and-push-container
@@ -187,9 +197,15 @@ jobs:
           echo "Result: deployed to production"
           echo "Image tag: ${{ needs.build-and-push-container.outputs.image_tag }}"
 
+      - name: Force PROD deployment failure
+        if: vars.FORCE_DEPLOY_FAILURE == 'prod'
+        run: |
+          echo "Forced PROD deployment failure requested."
+          exit 1
+
   rollback-int:
-    name: Rollback Integration
-    if: failure() && needs.deploy-int.result == 'failure'
+    name: Rollback INT - Await Approval
+    if: always() && needs.deploy-int.result == 'failure'
     runs-on: ubuntu-latest
     needs:
       - deploy-int
@@ -209,8 +225,8 @@ jobs:
           echo "Rollback image tag: previous-stable-int"
 
   rollback-qa:
-    name: Rollback QA
-    if: failure() && needs.deploy-qa.result == 'failure'
+    name: Rollback QA - Await Approval
+    if: always() && needs.deploy-qa.result == 'failure'
     runs-on: ubuntu-latest
     needs:
       - deploy-qa
@@ -230,8 +246,8 @@ jobs:
           echo "Rollback image tag: previous-stable-qa"
 
   rollback-prod:
-    name: Rollback Production
-    if: failure() && needs.deploy-prod.result == 'failure'
+    name: Rollback PROD - Await Approval
+    if: always() && needs.deploy-prod.result == 'failure'
     runs-on: ubuntu-latest
     needs:
       - deploy-prod

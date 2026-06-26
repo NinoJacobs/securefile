@@ -26,6 +26,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CustomerStatementsService {
 
+    private static final String CUSTOM_STATEMENT_NAME = "Custom Statement";
+
     private final StatementRepository statementRepository;
     private final StatementApiMapper statementApiMapper;
     private final StatementDomainSupportService statementDomainSupportService;
@@ -37,6 +39,7 @@ public class CustomerStatementsService {
     public List<StatementSummaryResponse> listMyStatements() {
         Long customerId = CurrentUser.requiredCustomerId();
         return statementRepository.findByCustomerIdOrderByPeriodEndDesc(customerId).stream()
+                .filter(statement -> !CUSTOM_STATEMENT_NAME.equals(statement.getStatementName()))
                 .map(this::toStatementSummaryResponseWithRefreshedDownloadLink)
                 .toList();
     }

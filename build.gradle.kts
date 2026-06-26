@@ -76,8 +76,12 @@ dependencies {
 
 	// JUnit Platform runtime launcher.
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+	// In-memory database for Spring context tests using the test profile.
+	testRuntimeOnly("com.h2database:h2")
 }
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	systemProperty("spring.profiles.active", "test")
 }

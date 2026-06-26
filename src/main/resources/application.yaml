@@ -37,6 +37,8 @@ securefile:
   jwt:
     secret: ${SECUREFILE_JWT_SECRET}
     ttl-minutes: ${SECUREFILE_JWT_TTL_MINUTES:60}
+    refresh-secret: ${SECUREFILE_JWT_REFRESH_SECRET}
+    refresh-ttl-minutes: ${SECUREFILE_JWT_REFRESH_TTL_MINUTES:10080}
   download-link:
     secret: ${SECUREFILE_DOWNLOAD_LINK_SECRET}
   s3:

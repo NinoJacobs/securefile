@@ -9,6 +9,8 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "securefile.jwt")
 public record JwtProperties(
         @NotBlank String secret,
-        @Positive long ttlMinutes
+        @Positive long ttlMinutes,
+        @NotBlank String refreshSecret,
+        @Positive long refreshTtlMinutes
 ) {
 }

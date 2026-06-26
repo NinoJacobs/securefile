@@ -2,6 +2,7 @@ package com.capitec.securefile.auth.controller;
 
 import com.capitec.securefile.auth.model.LoginRequest;
 import com.capitec.securefile.auth.model.LoginResponse;
+import com.capitec.securefile.auth.model.RefreshTokenRequest;
 import com.capitec.securefile.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -23,5 +24,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refresh(request));
     }
 }

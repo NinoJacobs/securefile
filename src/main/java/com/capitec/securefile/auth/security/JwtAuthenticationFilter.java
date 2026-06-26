@@ -33,9 +33,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        JwtService.ValidatedToken token;
+        JwtService.ValidatedAccessToken token;
         try {
-            token = jwtService.validateToken(authorizationHeader.substring(7));
+            token = jwtService.validateAccessToken(authorizationHeader.substring(7));
         } catch (ResponseStatusException ex) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or expired JWT token");
             return;

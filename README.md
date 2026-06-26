@@ -36,7 +36,15 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
   -d '{"username":"customer.one","password":"password"}'
 ```
 
-Use the returned token:
+Refresh an expired access token:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refreshToken":"<refreshToken>"}'
+```
+
+Use the returned access token:
 
 ```bash
 curl http://localhost:8080/api/v1/customers/me/statements \

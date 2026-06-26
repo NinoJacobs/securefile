@@ -7,7 +7,9 @@ spring:
 securefile:
   jwt:
     secret: local-dev-jwt-secret-change-me
-    ttl-minutes: 60
+    ttl-minutes: 5
+    refresh-secret: local-dev-jwt-refresh-secret-change-me
+    refresh-ttl-minutes: 10080
   download-link:
     secret: local-dev-download-link-secret-change-me
   s3:

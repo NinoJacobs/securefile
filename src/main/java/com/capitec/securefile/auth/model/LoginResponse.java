@@ -11,4 +11,6 @@ public class LoginResponse {
     String tokenType;
     String accessToken;
     OffsetDateTime expiresAt;
+    String refreshToken;
+    OffsetDateTime refreshTokenExpiresAt;
 }

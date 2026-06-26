@@ -6,11 +6,13 @@ services:
       - postgres
       - localstack
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/securefile
+      DB_URL: jdbc:postgresql://postgres:5433/securefile
       DB_USERNAME: admin
       DB_PASSWORD: admin
       SECUREFILE_JWT_SECRET: local-dev-jwt-secret-change-me
-      SECUREFILE_JWT_TTL_MINUTES: "60"
+      SECUREFILE_JWT_TTL_MINUTES: "5"
+      SECUREFILE_JWT_REFRESH_SECRET: local-dev-jwt-refresh-secret-change-me
+      SECUREFILE_JWT_REFRESH_TTL_MINUTES: "10080"
       SECUREFILE_DOWNLOAD_LINK_SECRET: local-dev-download-link-secret-change-me
       SECUREFILE_S3_ENDPOINT: http://localstack:4566
       SECUREFILE_S3_REGION: us-east-1
@@ -29,7 +31,7 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - securefile-postgres-data:/var/lib/postgresql/data
       - ./src/main/resources/db/data/001_create_all_tables.sql:/docker-entrypoint-initdb.d/001_create_all_tables.sql:ro

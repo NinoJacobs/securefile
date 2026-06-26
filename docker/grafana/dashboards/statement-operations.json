@@ -1,0 +1,58 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Statement Generation",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [{"expr": "rate(securefile_statement_generation_total[1m])", "legendFormat": "generated", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}}
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Statement Downloads",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [{"expr": "rate(securefile_statement_download_total[1m])", "legendFormat": "downloads", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}}
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Statement Download Failures",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [{"expr": "rate(securefile_statement_download_failures_total[1m])", "legendFormat": "download failures", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}}
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "S3 Failures",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [
+        {"expr": "rate(securefile_s3_upload_failures_total[1m])", "legendFormat": "upload", "refId": "A"},
+        {"expr": "rate(securefile_s3_download_failures_total[1m])", "legendFormat": "download", "refId": "B"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}}
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 42,
+  "tags": ["securefile", "statements"],
+  "templating": {"list": []},
+  "time": {"from": "now-15m", "to": "now"},
+  "timezone": "browser",
+  "title": "Securefile Statement Operations",
+  "uid": "securefile-statement-operations",
+  "version": 1
+}

@@ -9,6 +9,8 @@ import com.capitec.securefile.model.response.DownloadLinkResponse;
 import com.capitec.securefile.model.response.StatementDetailResponse;
 import com.capitec.securefile.model.response.StatementSummaryResponse;
 import com.capitec.securefile.storage.service.StatementObjectStorageService;
+import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -34,6 +36,14 @@ public class CustomerStatementsService {
     private final StatementDownloadLinkService statementDownloadLinkService;
     private final StatementGenerationService statementGenerationService;
     private final StatementObjectStorageService statementObjectStorageService;
+    private final MeterRegistry meterRegistry;
+
+    @PostConstruct
+    void registerMetrics() {
+        meterRegistry.counter("securefile_statement_generation");
+        meterRegistry.counter("securefile_statement_download");
+        meterRegistry.counter("securefile_statement_download_failures");
+    }
 
     @Transactional
     public List<StatementSummaryResponse> listMyStatements() {
@@ -48,6 +58,7 @@ public class CustomerStatementsService {
     public StatementDetailResponse requestMyStatement(StatementPeriod period, LocalDate startDate, LocalDate endDate) {
         Long customerId = CurrentUser.requiredCustomerId();
         Statement statement = statementGenerationService.generateStatement(customerId, period, startDate, endDate);
+        meterRegistry.counter("securefile_statement_generation").increment();
         DownloadLinkResponse downloadLink = refreshDownloadLink(statement);
         return statementApiMapper.toStatementDetailResponse(statement, downloadLink);
     }
@@ -62,21 +73,27 @@ public class CustomerStatementsService {
 
     @Transactional
     public ResponseEntity<Resource> downloadStatement(String statementId, String token) {
-        Long customerId = CurrentUser.requiredCustomerId();
-        Statement statement = statementDomainSupportService.findStatementForCustomer(statementId, customerId);
-        statementDownloadLinkService.validateDownloadToken(token, statement, customerId);
+        try {
+            Long customerId = CurrentUser.requiredCustomerId();
+            Statement statement = statementDomainSupportService.findStatementForCustomer(statementId, customerId);
+            statementDownloadLinkService.validateDownloadToken(token, statement, customerId);
 
-        byte[] content = loadOrCreateStatementObject(statement);
-        Resource resource = new ByteArrayResource(content);
-        MediaType mediaType = MediaType.parseMediaType(statement.getContentType());
-        return ResponseEntity.ok()
-                .contentType(mediaType)
-                .contentLength(content.length)
-                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
-                        .filename(statement.getFileName())
-                        .build()
-                        .toString())
-                .body(resource);
+            byte[] content = loadOrCreateStatementObject(statement);
+            Resource resource = new ByteArrayResource(content);
+            MediaType mediaType = MediaType.parseMediaType(statement.getContentType());
+            meterRegistry.counter("securefile_statement_download").increment();
+            return ResponseEntity.ok()
+                    .contentType(mediaType)
+                    .contentLength(content.length)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                            .filename(statement.getFileName())
+                            .build()
+                            .toString())
+                    .body(resource);
+        } catch (RuntimeException ex) {
+            meterRegistry.counter("securefile_statement_download_failures").increment();
+            throw ex;
+        }
     }
 
     private StatementSummaryResponse toStatementSummaryResponseWithRefreshedDownloadLink(Statement statement) {

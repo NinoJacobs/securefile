@@ -123,7 +123,6 @@ curl http://localhost:8080/actuator/health/readiness
 ```
 
 ## Todo For SE2
-- Add Liquibase or Flyway for versioned schema migrations and reference data.
 - Add real integration tests with Testcontainers for PostgreSQL and LocalStack.
 
 ## out of scope

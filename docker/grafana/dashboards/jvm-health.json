@@ -1,0 +1,55 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Heap Memory Used",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [{"expr": "sum by (id) (jvm_memory_used_bytes{area=\"heap\"})", "legendFormat": "{{id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}}
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Non-Heap Memory Used",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [{"expr": "sum by (id) (jvm_memory_used_bytes{area=\"nonheap\"})", "legendFormat": "{{id}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}}
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "GC Pauses",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [{"expr": "rate(jvm_gc_pause_seconds_count[5m])", "legendFormat": "{{action}} {{cause}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "ops"}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}}
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Live Threads",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "targets": [{"expr": "jvm_threads_live_threads", "legendFormat": "live", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "none"}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}}
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 42,
+  "tags": ["securefile", "jvm"],
+  "templating": {"list": []},
+  "time": {"from": "now-15m", "to": "now"},
+  "timezone": "browser",
+  "title": "Securefile JVM Health",
+  "uid": "securefile-jvm-health",
+  "version": 1
+}

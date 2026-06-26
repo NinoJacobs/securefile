@@ -52,6 +52,33 @@ services:
       - securefile-localstack-data:/var/lib/localstack
       - ./docker/localstack/init/01-create-bucket.sh:/etc/localstack/init/ready.d/01-create-bucket.sh:ro
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: securefile-prometheus
+    depends_on:
+      - app
+    ports:
+      - "8082:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: securefile-grafana
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "8083:3000"
+    volumes:
+      - securefile-grafana-data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+
 volumes:
   securefile-postgres-data:
   securefile-localstack-data:
+  securefile-grafana-data:

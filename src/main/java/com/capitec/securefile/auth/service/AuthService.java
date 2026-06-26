@@ -7,6 +7,8 @@ import com.capitec.securefile.database.entity.Customer;
 import com.capitec.securefile.database.entity.User;
 import com.capitec.securefile.database.repository.CustomerRepository;
 import com.capitec.securefile.database.repository.UserRepository;
+import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,26 +28,41 @@ public class AuthService {
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final MeterRegistry meterRegistry;
+
+    @PostConstruct
+    void registerMetrics() {
+        meterRegistry.counter("securefile_auth_login_attempts");
+        meterRegistry.counter("securefile_auth_login_failures");
+        meterRegistry.counter("securefile_auth_rate_limit_blocks");
+        meterRegistry.counter("securefile_auth_token_refresh");
+    }
 
     public LoginResponse login(LoginRequest request) {
-        if (request == null || request.getUsername() == null || request.getPassword() == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
-        }
-
-        UserDetails userDetails;
+        meterRegistry.counter("securefile_auth_login_attempts").increment();
         try {
-            userDetails = userDetailsService.loadUserByUsername(request.getUsername());
-        } catch (UsernameNotFoundException ex) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password", ex);
-        }
+            if (request == null || request.getUsername() == null || request.getPassword() == null) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
+            }
 
-        if (!userDetails.isEnabled() || !passwordEncoder.matches(request.getPassword(), userDetails.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
-        }
+            UserDetails userDetails;
+            try {
+                userDetails = userDetailsService.loadUserByUsername(request.getUsername());
+            } catch (UsernameNotFoundException ex) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password", ex);
+            }
 
-        Customer customer = customerForToken(userDetails);
-        JwtService.TokenPair tokenPair = jwtService.issueTokenPair(userDetails, customer);
-        return toLoginResponse(tokenPair);
+            if (!userDetails.isEnabled() || !passwordEncoder.matches(request.getPassword(), userDetails.getPassword())) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
+            }
+
+            Customer customer = customerForToken(userDetails);
+            JwtService.TokenPair tokenPair = jwtService.issueTokenPair(userDetails, customer);
+            return toLoginResponse(tokenPair);
+        } catch (ResponseStatusException ex) {
+            meterRegistry.counter("securefile_auth_login_failures").increment();
+            throw ex;
+        }
     }
 
     public LoginResponse refresh(RefreshTokenRequest request) {
@@ -73,6 +90,7 @@ public class AuthService {
 
         Customer customer = customerForToken(userDetails);
         JwtService.TokenPair tokenPair = jwtService.issueTokenPair(userDetails, customer);
+        meterRegistry.counter("securefile_auth_token_refresh").increment();
         return toLoginResponse(tokenPair);
     }
 

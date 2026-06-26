@@ -8,6 +8,7 @@ import com.capitec.securefile.database.entity.Role;
 import com.capitec.securefile.database.entity.User;
 import com.capitec.securefile.database.repository.CustomerRepository;
 import com.capitec.securefile.database.repository.UserRepository;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -45,7 +46,8 @@ class AuthServiceTest {
                 userRepository,
                 customerRepository,
                 passwordEncoder,
-                jwtService
+                jwtService,
+                new SimpleMeterRegistry()
         );
 
         LoginRequest request = new LoginRequest();
@@ -88,7 +90,8 @@ class AuthServiceTest {
                 userRepository,
                 customerRepository,
                 passwordEncoder,
-                jwtService
+                jwtService,
+                new SimpleMeterRegistry()
         );
 
         RefreshTokenRequest request = new RefreshTokenRequest();

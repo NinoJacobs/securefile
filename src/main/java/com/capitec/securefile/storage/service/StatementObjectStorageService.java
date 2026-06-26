@@ -1,6 +1,7 @@
 package com.capitec.securefile.storage.service;
 
 import com.capitec.securefile.storage.config.SecurefileS3Properties;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,10 +25,14 @@ public class StatementObjectStorageService {
 
     private final S3Client s3Client;
     private final SecurefileS3Properties properties;
+    private final MeterRegistry meterRegistry;
 
-    public StatementObjectStorageService(S3Client s3Client, SecurefileS3Properties properties) {
+    public StatementObjectStorageService(S3Client s3Client, SecurefileS3Properties properties, MeterRegistry meterRegistry) {
         this.s3Client = s3Client;
         this.properties = properties;
+        this.meterRegistry = meterRegistry;
+        meterRegistry.counter("securefile_s3_upload_failures");
+        meterRegistry.counter("securefile_s3_download_failures");
     }
 
     public StoredStatementObject storeStatement(String key, String contentType, byte[] content) {
@@ -40,6 +45,7 @@ public class StatementObjectStorageService {
         try {
             s3Client.putObject(request, RequestBody.fromBytes(content));
         } catch (S3Exception ex) {
+            meterRegistry.counter("securefile_s3_upload_failures").increment();
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     "Unable to upload statement to object storage",
@@ -59,11 +65,14 @@ public class StatementObjectStorageService {
             ResponseBytes<GetObjectResponse> response = s3Client.getObjectAsBytes(request);
             return response.asByteArray();
         } catch (NoSuchKeyException ex) {
+            meterRegistry.counter("securefile_s3_download_failures").increment();
             throw new ResponseStatusException(NOT_FOUND, "Statement file not found", ex);
         } catch (S3Exception ex) {
             if (ex.statusCode() == 404) {
+                meterRegistry.counter("securefile_s3_download_failures").increment();
                 throw new ResponseStatusException(NOT_FOUND, "Statement file not found", ex);
             }
+            meterRegistry.counter("securefile_s3_download_failures").increment();
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     "Unable to download statement from object storage",

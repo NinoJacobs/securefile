@@ -9,6 +9,7 @@ import com.capitec.securefile.database.repository.StatementRepository;
 import com.capitec.securefile.model.response.DownloadLinkResponse;
 import com.capitec.securefile.model.response.StatementSummaryResponse;
 import com.capitec.securefile.storage.service.StatementObjectStorageService;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -49,7 +50,8 @@ class CustomerStatementsServiceTest {
                 statementDomainSupportService,
                 statementDownloadLinkService,
                 statementGenerationService,
-                statementObjectStorageService
+                statementObjectStorageService,
+                new SimpleMeterRegistry()
         );
 
         Customer customer = Customer.builder().id(1L).build();

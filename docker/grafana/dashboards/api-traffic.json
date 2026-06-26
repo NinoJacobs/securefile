@@ -1,0 +1,45 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Requests by Endpoint",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 9, "w": 24, "x": 0, "y": 0},
+      "targets": [{"expr": "sum by (uri, method, status) (rate(http_server_requests_seconds_count[1m]))", "legendFormat": "{{method}} {{uri}} {{status}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}}
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "4xx Responses",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 9},
+      "targets": [{"expr": "sum by (uri, status) (rate(http_server_requests_seconds_count{status=~\"4..\"}[1m]))", "legendFormat": "{{uri}} {{status}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}}
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "5xx Responses",
+      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 9},
+      "targets": [{"expr": "sum by (uri, status) (rate(http_server_requests_seconds_count{status=~\"5..\"}[1m]))", "legendFormat": "{{uri}} {{status}}", "refId": "A"}],
+      "fieldConfig": {"defaults": {"unit": "reqps"}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single", "sort": "none"}}
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 42,
+  "tags": ["securefile", "api"],
+  "templating": {"list": []},
+  "time": {"from": "now-15m", "to": "now"},
+  "timezone": "browser",
+  "title": "Securefile API Traffic",
+  "uid": "securefile-api-traffic",
+  "version": 1
+}

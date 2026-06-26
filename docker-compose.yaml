@@ -6,7 +6,7 @@ services:
       - postgres
       - localstack
     environment:
-      DB_URL: jdbc:postgresql://postgres:5433/securefile
+      DB_URL: jdbc:postgresql://postgres:5432/securefile
       DB_USERNAME: admin
       DB_PASSWORD: admin
       SECUREFILE_JWT_SECRET: local-dev-jwt-secret-change-me
@@ -36,11 +36,6 @@ services:
       - "5433:5432"
     volumes:
       - securefile-postgres-data:/var/lib/postgresql/data
-      - ./src/main/resources/db/data/001_create_all_tables.sql:/docker-entrypoint-initdb.d/001_create_all_tables.sql:ro
-      - ./src/main/resources/db/data/002_seed_all_tables.sql:/docker-entrypoint-initdb.d/002_seed_all_tables.sql:ro
-      - ./src/main/resources/db/data/003_seed_all_tables_for_customer_1.sql:/docker-entrypoint-initdb.d/003_seed_all_tables_for_customer_1.sql:ro
-      - ./src/main/resources/db/data/004_seed_all_tables_for_customer_2.sql:/docker-entrypoint-initdb.d/004_seed_all_tables_for_customer_2.sql:ro
-      - ./src/main/resources/db/data/005_seed_all_tables_for_customer_3.sql:/docker-entrypoint-initdb.d/005_seed_all_tables_for_customer_3.sql:ro
 
   localstack:
     image: localstack/localstack:4

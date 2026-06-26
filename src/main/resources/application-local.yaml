@@ -10,6 +10,8 @@ securefile:
     ttl-minutes: 5
     refresh-secret: local-dev-jwt-refresh-secret-change-me
     refresh-ttl-minutes: 10080
+    issuer: securefile-auth-local
+    audience: securefile-api-local
   download-link:
     secret: local-dev-download-link-secret-change-me
   s3:

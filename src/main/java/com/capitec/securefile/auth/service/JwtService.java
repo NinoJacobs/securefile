@@ -36,6 +36,8 @@ public class JwtService {
     private final long accessTokenTtlMinutes;
     private final String refreshTokenSecret;
     private final long refreshTokenTtlMinutes;
+    private final String issuer;
+    private final String audience;
 
     public JwtService(ObjectMapper objectMapper, JwtProperties properties) {
         this.objectMapper = objectMapper;
@@ -43,6 +45,8 @@ public class JwtService {
         this.accessTokenTtlMinutes = properties.ttlMinutes();
         this.refreshTokenSecret = properties.refreshSecret();
         this.refreshTokenTtlMinutes = properties.refreshTtlMinutes();
+        this.issuer = properties.issuer();
+        this.audience = properties.audience();
     }
 
     public TokenPair issueTokenPair(UserDetails userDetails, Customer customer) {
@@ -61,6 +65,8 @@ public class JwtService {
         claims.put("sub", userDetails.getUsername());
         claims.put("roles", roles);
         claims.put("exp", expiresAt.toEpochSecond());
+        claims.put("iss", issuer);
+        claims.put("aud", audience);
         claims.put("tokenType", ACCESS_TOKEN_TYPE);
         if (customer != null) {
             claims.put("customerId", customer.getId());
@@ -76,6 +82,8 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("sub", userDetails.getUsername());
         claims.put("exp", expiresAt.toEpochSecond());
+        claims.put("iss", issuer);
+        claims.put("aud", audience);
         claims.put("tokenType", REFRESH_TOKEN_TYPE);
 
         return issueToken(claims, refreshTokenSecret, expiresAt);
@@ -130,6 +138,12 @@ public class JwtService {
         long expiresAt = longClaim(payload, "exp");
         if (Instant.now().getEpochSecond() > expiresAt) {
             throw unauthorized("JWT token has expired");
+        }
+        if (!issuer.equals(stringClaim(payload, "iss"))) {
+            throw unauthorized("Invalid JWT token");
+        }
+        if (!audience.equals(stringClaim(payload, "aud"))) {
+            throw unauthorized("Invalid JWT token");
         }
         if (!expectedTokenType.equals(stringClaim(payload, "tokenType"))) {
             throw unauthorized("Invalid JWT token");

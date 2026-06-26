@@ -13,6 +13,8 @@ services:
       SECUREFILE_JWT_TTL_MINUTES: "5"
       SECUREFILE_JWT_REFRESH_SECRET: local-dev-jwt-refresh-secret-change-me
       SECUREFILE_JWT_REFRESH_TTL_MINUTES: "10080"
+      SECUREFILE_JWT_ISSUER: securefile-auth-local
+      SECUREFILE_JWT_AUDIENCE: securefile-api-local
       SECUREFILE_DOWNLOAD_LINK_SECRET: local-dev-download-link-secret-change-me
       SECUREFILE_S3_ENDPOINT: http://localstack:4566
       SECUREFILE_S3_REGION: us-east-1

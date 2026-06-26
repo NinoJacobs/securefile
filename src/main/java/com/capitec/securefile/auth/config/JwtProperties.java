@@ -11,6 +11,8 @@ public record JwtProperties(
         @NotBlank String secret,
         @Positive long ttlMinutes,
         @NotBlank String refreshSecret,
-        @Positive long refreshTtlMinutes
+        @Positive long refreshTtlMinutes,
+        @NotBlank String issuer,
+        @NotBlank String audience
 ) {
 }

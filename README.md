@@ -128,7 +128,6 @@ curl http://localhost:8080/actuator/health/readiness
 - Add real integration tests with Testcontainers for PostgreSQL and LocalStack.
 - Add GitHub Actions workflows for pull request build, test, and quality checks.
 - Split configuration by profile: local, test
-- Harden JWT handling with issuer, audience, stronger secret management, and short token TTLs.
 - Add structured logging and request correlation IDs.
 - Add metrics for statement generation, downloads, S3 failures, and database failures.
 
@@ -136,3 +135,4 @@ curl http://localhost:8080/actuator/health/readiness
 - Add login rate limiting.
 - Add a scheduler to refresh standard 1 month, 3 month, 6 month, and 9 month statements.
 - Add dependency vulnerability scanning in CI.
+- Move secrets to AWS secret manager/github actions

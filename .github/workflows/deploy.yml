@@ -22,6 +22,12 @@ jobs:
     name: Sync PR Changes
     if: github.event_name == 'workflow_dispatch' || github.event.action != 'closed'
     runs-on: ubuntu-latest
+    env:
+      SECUREFILE_JWT_SECRET: ${{ secrets.SECUREFILE_JWT_SECRET }}
+      SECUREFILE_JWT_REFRESH_SECRET: ${{ secrets.SECUREFILE_JWT_REFRESH_SECRET }}
+      SECUREFILE_JWT_ISSUER: ${{ secrets.SECUREFILE_JWT_ISSUER }}
+      SECUREFILE_JWT_AUDIENCE: ${{ secrets.SECUREFILE_JWT_AUDIENCE }}
+      SECUREFILE_DOWNLOAD_LINK_SECRET: ${{ secrets.SECUREFILE_DOWNLOAD_LINK_SECRET }}
 
     steps:
       - name: Check out repository

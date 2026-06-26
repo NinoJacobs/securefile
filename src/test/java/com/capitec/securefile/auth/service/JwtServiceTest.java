@@ -15,13 +15,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JwtServiceTest {
 
+    private static final String ISSUER = "securefile-auth-test";
+    private static final String AUDIENCE = "securefile-api-test";
+
     private final JwtService jwtService = new JwtService(
             new ObjectMapper(),
             new JwtProperties(
                     "access-secret-for-tests-1234567890",
                     5,
                     "refresh-secret-for-tests-1234567890",
-                    1440
+                    1440,
+                    ISSUER,
+                    AUDIENCE
             )
     );
 
@@ -70,6 +75,60 @@ class JwtServiceTest {
         JwtService.IssuedToken refreshToken = jwtService.issueRefreshToken(userDetails);
 
         assertThatThrownBy(() -> jwtService.validateAccessToken(refreshToken.token()))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("401 UNAUTHORIZED");
+    }
+
+    @Test
+    void shouldRejectAccessTokenWithWrongIssuer() {
+        User userDetails = new User(
+                "customer.one",
+                "encoded-password",
+                List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"))
+        );
+        Customer customer = Customer.builder().id(1L).customerNumber("CUST-0001").build();
+        JwtService wrongIssuerJwtService = new JwtService(
+                new ObjectMapper(),
+                new JwtProperties(
+                        "access-secret-for-tests-1234567890",
+                        5,
+                        "refresh-secret-for-tests-1234567890",
+                        1440,
+                        "different-issuer",
+                        AUDIENCE
+                )
+        );
+
+        JwtService.IssuedToken accessToken = jwtService.issueAccessToken(userDetails, customer);
+
+        assertThatThrownBy(() -> wrongIssuerJwtService.validateAccessToken(accessToken.token()))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("401 UNAUTHORIZED");
+    }
+
+    @Test
+    void shouldRejectAccessTokenWithWrongAudience() {
+        User userDetails = new User(
+                "customer.one",
+                "encoded-password",
+                List.of(new SimpleGrantedAuthority("ROLE_CUSTOMER"))
+        );
+        Customer customer = Customer.builder().id(1L).customerNumber("CUST-0001").build();
+        JwtService wrongAudienceJwtService = new JwtService(
+                new ObjectMapper(),
+                new JwtProperties(
+                        "access-secret-for-tests-1234567890",
+                        5,
+                        "refresh-secret-for-tests-1234567890",
+                        1440,
+                        ISSUER,
+                        "different-audience"
+                )
+        );
+
+        JwtService.IssuedToken accessToken = jwtService.issueAccessToken(userDetails, customer);
+
+        assertThatThrownBy(() -> wrongAudienceJwtService.validateAccessToken(accessToken.token()))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("401 UNAUTHORIZED");
     }

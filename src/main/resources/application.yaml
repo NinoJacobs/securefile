@@ -36,9 +36,11 @@ springdoc:
 securefile:
   jwt:
     secret: ${SECUREFILE_JWT_SECRET}
-    ttl-minutes: ${SECUREFILE_JWT_TTL_MINUTES:60}
+    ttl-minutes: ${SECUREFILE_JWT_TTL_MINUTES:5}
     refresh-secret: ${SECUREFILE_JWT_REFRESH_SECRET}
     refresh-ttl-minutes: ${SECUREFILE_JWT_REFRESH_TTL_MINUTES:10080}
+    issuer: ${SECUREFILE_JWT_ISSUER}
+    audience: ${SECUREFILE_JWT_AUDIENCE}
   download-link:
     secret: ${SECUREFILE_DOWNLOAD_LINK_SECRET}
   s3:

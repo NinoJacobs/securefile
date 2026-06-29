@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -38,6 +39,7 @@ public class AuthService {
         meterRegistry.counter("securefile_auth_token_refresh");
     }
 
+    @Transactional(readOnly = true)
     public LoginResponse login(LoginRequest request) {
         meterRegistry.counter("securefile_auth_login_attempts").increment();
         try {
@@ -65,6 +67,7 @@ public class AuthService {
         }
     }
 
+    @Transactional(readOnly = true)
     public LoginResponse refresh(RefreshTokenRequest request) {
         if (request == null || request.getRefreshToken() == null || request.getRefreshToken().isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");

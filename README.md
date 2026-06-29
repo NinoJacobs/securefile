@@ -1,61 +1,69 @@
 # Securefile
 
+Securefile is a Spring Boot API for authentication and customer statement access. It runs locally with PostgreSQL, LocalStack S3, Prometheus, and Grafana through Docker Compose.
+
 ## Architecture
 
 See [Securefile Architecture](docs/architecture.md) for the system boundaries covering API, auth, database, object storage, metrics, CI, profiles, and local infrastructure.
 
-## How To Run
+## First-Time Setup
 
-Start PostgreSQL and LocalStack S3:
+Prerequisites:
+
+```text
+Java 25
+Docker
+Docker Compose
+```
+
+Start the full local stack:
 
 ```bash
 chmod +x docker/localstack/init/01-create-bucket.sh
 docker compose -f docker-compose.yaml up --build
 ```
 
-Run the application:
+This starts:
 
-```bash
-./gradlew bootRun
+```text
+securefile-app          Spring Boot API on port 8080
+securefile-postgres     PostgreSQL on host port 5433
+securefile-localstack   Local S3-compatible storage on port 4566
+securefile-prometheus   Prometheus on port 8082
+securefile-grafana      Grafana on port 8083
 ```
 
-Run the build/test task:
+Run tests:
 
 ```bash
 ./gradlew test
 ```
 
-Reset local infrastructure and reseed PostgreSQL:
+Reset local data and rebuild from scratch:
 
 ```bash
 docker compose -f docker-compose.yaml down -v
 docker compose -f docker-compose.yaml up --build
 ```
 
-Local login:
+## Useful URLs
 
-```bash
-curl -X POST http://localhost:8080/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"customer.one","password":"password"}'
+```text
+Application health:  http://localhost:8080/actuator/health
+Swagger UI:          http://localhost:8080/swagger-ui.html
+OpenAPI JSON:        http://localhost:8080/api-docs
+Prometheus:          http://localhost:8082
+Grafana:             http://localhost:8083
 ```
 
-Refresh an expired access token:
+Grafana login:
 
-```bash
-curl -X POST http://localhost:8080/api/v1/auth/refresh \
-  -H "Content-Type: application/json" \
-  -d '{"refreshToken":"<refreshToken>"}'
+```text
+username: admin
+password: admin
 ```
 
-Use the returned access token:
-
-```bash
-curl http://localhost:8080/api/v1/customers/me/statements \
-  -H "Authorization: Bearer <accessToken>"
-```
-
-Seeded users:
+## Seeded Users
 
 ```text
 admin.user      / password
@@ -64,7 +72,48 @@ customer.two    / password
 customer.three  / password
 ```
 
-## Verify Postgres And S3
+## Auth Flow
+
+The auth flow is:
+
+```text
+login -> refresh token
+```
+
+Login:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"customer.one","password":"password"}'
+```
+
+Refresh an access token:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refreshToken":"<refreshToken>"}'
+```
+
+Call a protected customer endpoint:
+
+```bash
+curl http://localhost:8080/api/v1/customers/me/statements \
+  -H "Authorization: Bearer <accessToken>"
+```
+
+## Database Migrations
+
+The project uses Flyway for versioned database migrations. Migration files live in:
+
+```text
+src/main/resources/db/migration
+```
+
+The application runs migrations at startup and uses Hibernate `ddl-auto: validate`, so schema changes should be made through Flyway instead of generated automatically by Hibernate.
+
+## Local Verification
 
 Check containers:
 
@@ -72,7 +121,7 @@ Check containers:
 docker compose -f docker-compose.yaml ps
 ```
 
-Verify PostgreSQL is accepting connections:
+Verify PostgreSQL:
 
 ```bash
 docker exec securefile-postgres pg_isready -U admin -d securefile
@@ -100,13 +149,13 @@ account_transactions: 300
 statements:           12
 ```
 
-Verify LocalStack is running:
+Verify LocalStack:
 
 ```bash
 curl http://localhost:4566/_localstack/health
 ```
 
-Verify the S3 bucket exists:
+Verify the S3 bucket:
 
 ```bash
 AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test aws --endpoint-url=http://localhost:4566 s3 ls
@@ -118,60 +167,38 @@ Expected bucket:
 securefile-statements
 ```
 
-Verify application health:
+## Monitoring
 
-```bash
-curl http://localhost:8080/actuator/health
-curl http://localhost:8080/actuator/health/liveness
-curl http://localhost:8080/actuator/health/readiness
-```
-
-## Local Monitoring
-
-The Docker Compose stack also runs Prometheus and Grafana for local observability.
-
-Start the full stack:
-
-```bash
-docker compose -f docker-compose.yaml up --build
-```
-
-Access Prometheus:
+Prometheus scrapes Spring Boot Actuator metrics from:
 
 ```text
-http://localhost:8082
+app:8080/actuator/prometheus
 ```
 
-Prometheus scrapes the Spring Boot application from:
-
-```text
-http://securefile-app:8080/actuator/prometheus
-```
-
-From your host machine, you can check the raw application metrics at:
+From your host machine, view the raw metrics at:
 
 ```bash
 curl http://localhost:8080/actuator/prometheus
 ```
 
-Access Grafana:
+Prometheus is available at:
+
+```text
+http://localhost:8082
+```
+
+Check that Prometheus is scraping the app:
+
+```bash
+curl "http://localhost:8082/api/v1/query?query=up%7Bjob%3D%22securefile%22%7D"
+```
+
+The expected result includes `"value":[...,"1"]`.
+
+Grafana is available at:
 
 ```text
 http://localhost:8083
-```
-
-Default local Grafana login:
-
-```text
-username: admin
-password: admin
-```
-
-Grafana is provisioned automatically with the Prometheus datasource and Securefile dashboards from:
-
-```text
-docker/grafana/provisioning
-docker/grafana/dashboards
 ```
 
 Provisioned dashboards:
@@ -186,9 +213,15 @@ Securefile Security and Auth     Login attempts, login failures, rate-limit bloc
 Securefile Statement Operations  Statement generation, downloads, download failures, S3 failures
 ```
 
-Custom Securefile metrics added:
+Important exposed metrics:
 
 ```text
+up
+http_server_requests_seconds_count
+jvm_memory_used_bytes
+hikaricp_connections_active
+hikaricp_connections_idle
+hikaricp_connections_pending
 securefile_auth_login_attempts_total
 securefile_auth_login_failures_total
 securefile_auth_rate_limit_blocks_total
@@ -200,29 +233,35 @@ securefile_s3_upload_failures_total
 securefile_s3_download_failures_total
 ```
 
-If a dashboard shows no data, check that the app is being scraped:
+Some panels show `0` until you generate traffic by logging in, refreshing a token, generating a statement, or downloading a statement.
 
-```bash
-curl "http://localhost:8082/api/v1/query?query=up%7Bjob%3D%22securefile%22%7D"
+## CI/CD
+
+The GitHub Actions workflow is intentionally simulated because there is no real server yet. It shows the expected release path without deploying to real INT, QA, or PROD infrastructure.
+
+Pull request path:
+
+```text
+Build Application -> Quality Checks -> Build Container
 ```
 
-The expected result should include `"value":[...,"1"]`. Some panels show `0` until you generate traffic, for example by logging in, refreshing a token, generating a statement, or downloading a statement.
+Merged or manual release path:
 
-## CI And Release Workflow
+```text
+Build Release Artifact -> Build And Push Container -> Simulate Deploy INT -> Simulate Deploy QA -> Simulate Deploy PROD
+```
 
-The GitHub Actions release workflow is intentionally simulated. It models the expected build, quality, container promotion, deployment approval, and rollback stages, but it does not deploy to real INT, QA, or PROD infrastructure.
+Rollback path:
 
-This is useful for demonstrating the release shape before real hosting exists. A real deployment would need actual environment targets, registry publishing, runtime secrets, smoke checks, and rollback implementation.
+```text
+Simulate Rollback INT / QA / PROD
+```
 
-## Todo For SE2
-- Add real integration tests with Testcontainers for PostgreSQL and LocalStack.
+## Roadmap
 
-## Todo For SE3
-- Add indexes, constraints, validation, transaction boundaries, pagination, and tests around edge cases like missing statements, expired tokens, and unauthorized access.
-
-## out of scope
-- Add login rate limiting.
-- Add a scheduler to refresh standard 1 month, 3 month, 6 month, and 9 month statements.
-- Add dependency vulnerability scanning in CI.
-- Move secrets to AWS secret manager/github actions
-- kubernetes for autoscaling, load balancing, etc. 
+```text
+Add login rate limiting.
+Add a scheduler to refresh standard 1 month, 3 month, 6 month, and 9 month statements.
+Move secrets to AWS Secrets Manager or GitHub Actions secrets.
+Add Kubernetes for autoscaling, load balancing, and production orchestration.
+```

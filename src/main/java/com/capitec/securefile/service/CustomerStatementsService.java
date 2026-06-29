@@ -4,7 +4,7 @@ import com.capitec.securefile.common.mapper.StatementApiMapper;
 import com.capitec.securefile.common.util.CurrentUser;
 import com.capitec.securefile.database.entity.Statement;
 import com.capitec.securefile.database.repository.StatementRepository;
-import com.capitec.securefile.model.request.StatementPeriod;
+import com.capitec.securefile.model.request.StatementGenerationRequest;
 import com.capitec.securefile.model.response.DownloadLinkResponse;
 import com.capitec.securefile.model.response.StatementDetailResponse;
 import com.capitec.securefile.model.response.StatementSummaryResponse;
@@ -21,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -48,6 +47,7 @@ public class CustomerStatementsService {
     @Transactional
     public List<StatementSummaryResponse> listMyStatements() {
         Long customerId = CurrentUser.requiredCustomerId();
+
         return statementRepository.findByCustomerIdOrderByPeriodEndDesc(customerId).stream()
                 .filter(statement -> !CUSTOM_STATEMENT_NAME.equals(statement.getStatementName()))
                 .map(this::toStatementSummaryResponseWithRefreshedDownloadLink)
@@ -55,19 +55,30 @@ public class CustomerStatementsService {
     }
 
     @Transactional
-    public StatementDetailResponse requestMyStatement(StatementPeriod period, LocalDate startDate, LocalDate endDate) {
+    public StatementDetailResponse requestMyStatement(StatementGenerationRequest request) {
         Long customerId = CurrentUser.requiredCustomerId();
-        Statement statement = statementGenerationService.generateStatement(customerId, period, startDate, endDate);
+
+        Statement statement = statementGenerationService.generateStatement(
+                customerId,
+                request.getPeriod(),
+                request.getStartDate(),
+                request.getEndDate());
+
         meterRegistry.counter("securefile_statement_generation").increment();
+
         DownloadLinkResponse downloadLink = refreshDownloadLink(statement);
+
         return statementApiMapper.toStatementDetailResponse(statement, downloadLink);
     }
 
     @Transactional
     public StatementDetailResponse getMyStatement(String statementId) {
         Long customerId = CurrentUser.requiredCustomerId();
+
         Statement statement = statementDomainSupportService.findStatementForCustomer(statementId, customerId);
+
         DownloadLinkResponse downloadLink = refreshDownloadLink(statement);
+
         return statementApiMapper.toStatementDetailResponse(statement, downloadLink);
     }
 
@@ -76,12 +87,15 @@ public class CustomerStatementsService {
         try {
             Long customerId = CurrentUser.requiredCustomerId();
             Statement statement = statementDomainSupportService.findStatementForCustomer(statementId, customerId);
+
             statementDownloadLinkService.validateDownloadToken(token, statement, customerId);
 
             byte[] content = loadOrCreateStatementObject(statement);
             Resource resource = new ByteArrayResource(content);
             MediaType mediaType = MediaType.parseMediaType(statement.getContentType());
+
             meterRegistry.counter("securefile_statement_download").increment();
+
             return ResponseEntity.ok()
                     .contentType(mediaType)
                     .contentLength(content.length)

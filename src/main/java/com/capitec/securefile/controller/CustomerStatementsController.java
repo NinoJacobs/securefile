@@ -1,14 +1,15 @@
 package com.capitec.securefile.controller;
 
 import com.capitec.securefile.api.CustomerStatementsApi;
-import com.capitec.securefile.model.request.StatementPeriod;
+import com.capitec.securefile.model.request.StatementGenerationRequest;
 import com.capitec.securefile.model.response.StatementDetailResponse;
 import com.capitec.securefile.model.response.StatementSummaryResponse;
 import com.capitec.securefile.service.CustomerStatementsService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -36,11 +36,8 @@ public class CustomerStatementsController implements CustomerStatementsApi {
 
     @PostMapping("/generate")
     @Override
-    public ResponseEntity<StatementDetailResponse> requestStatement(
-            @RequestParam(defaultValue = "ONE_MONTH") StatementPeriod period,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        return ResponseEntity.status(201).body(customerStatementsService.requestMyStatement(period, startDate, endDate));
+    public ResponseEntity<StatementDetailResponse> requestStatement(@Valid StatementGenerationRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(customerStatementsService.requestMyStatement(request));
     }
 
     @GetMapping("/{statementId}")

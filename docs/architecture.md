@@ -12,9 +12,13 @@ The API layer exposes REST endpoints for authentication, customer statement acce
 
 Swagger/OpenAPI is available through the Springdoc UI when the application is running.
 
+API failures use a consistent JSON error model with timestamp, status, error, message, path, method, and validation error details where relevant.
+
 ### Auth
 
-Authentication uses username/password login and JWT access tokens. Refresh tokens are issued separately from access tokens and are validated through the auth service. Customer-scoped endpoints should derive the customer identity from the authenticated user context rather than accepting customer IDs from the caller.
+Authentication uses username/password login and JWT access tokens. Refresh tokens are issued separately from access tokens and are validated through the auth service.
+
+Customer-scoped endpoints should derive the customer identity from the authenticated user context rather than accepting customer IDs from the caller.
 
 Auth-related metrics are exported for login attempts, login failures, rate-limit blocks, and token refreshes.
 
@@ -22,7 +26,7 @@ Auth-related metrics are exported for login attempts, login failures, rate-limit
 
 PostgreSQL is the application database. It stores users, customers, accounts, transactions, statements, and related metadata. Schema changes are managed with Flyway migrations so database structure and reference data are versioned with the codebase.
 
-The application should prefer explicit constraints, indexes, and transaction boundaries over relying only on application logic.
+The schema uses foreign keys, unique constraints, check constraints, and lookup indexes. The application should prefer explicit constraints, indexes, and transaction boundaries over relying only on application logic.
 
 ### Object Storage
 
@@ -61,4 +65,3 @@ grafana     Metrics dashboards
 ```
 
 This local stack is meant to make development, debugging, and observability repeatable without needing cloud infrastructure.
-

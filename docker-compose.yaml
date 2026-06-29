@@ -6,7 +6,7 @@ services:
       - postgres
       - localstack
     environment:
-      DB_URL: jdbc:postgresql://postgres:5432/securefile
+      DB_URL: jdbc:postgresql://postgres:5433/securefile
       DB_USERNAME: admin
       DB_PASSWORD: admin
       SECUREFILE_JWT_SECRET: local-dev-jwt-secret-change-me

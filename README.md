@@ -1,5 +1,9 @@
 # Securefile
 
+## Architecture
+
+See [Securefile Architecture](docs/architecture.md) for the system boundaries covering API, auth, database, object storage, metrics, CI, profiles, and local infrastructure.
+
 ## How To Run
 
 Start PostgreSQL and LocalStack S3:
@@ -122,14 +126,103 @@ curl http://localhost:8080/actuator/health/liveness
 curl http://localhost:8080/actuator/health/readiness
 ```
 
+## Local Monitoring
+
+The Docker Compose stack also runs Prometheus and Grafana for local observability.
+
+Start the full stack:
+
+```bash
+docker compose -f docker-compose.yaml up --build
+```
+
+Access Prometheus:
+
+```text
+http://localhost:8082
+```
+
+Prometheus scrapes the Spring Boot application from:
+
+```text
+http://securefile-app:8080/actuator/prometheus
+```
+
+From your host machine, you can check the raw application metrics at:
+
+```bash
+curl http://localhost:8080/actuator/prometheus
+```
+
+Access Grafana:
+
+```text
+http://localhost:8083
+```
+
+Default local Grafana login:
+
+```text
+username: admin
+password: admin
+```
+
+Grafana is provisioned automatically with the Prometheus datasource and Securefile dashboards from:
+
+```text
+docker/grafana/provisioning
+docker/grafana/dashboards
+```
+
+Provisioned dashboards:
+
+```text
+Securefile Overview              App uptime, startup time, request rate, JVM memory, CPU usage
+Securefile Service Overview      Request rate, 5xx error rate, average response time, status codes
+Securefile API Traffic           Requests by endpoint, 4xx responses, 5xx responses
+Securefile JVM Health            Heap, non-heap, GC pauses, live threads
+Securefile Database Pool         Hikari active/idle/pending connections and timeouts
+Securefile Security and Auth     Login attempts, login failures, rate-limit blocks, token refreshes
+Securefile Statement Operations  Statement generation, downloads, download failures, S3 failures
+```
+
+Custom Securefile metrics added:
+
+```text
+securefile_auth_login_attempts_total
+securefile_auth_login_failures_total
+securefile_auth_rate_limit_blocks_total
+securefile_auth_token_refresh_total
+securefile_statement_generation_total
+securefile_statement_download_total
+securefile_statement_download_failures_total
+securefile_s3_upload_failures_total
+securefile_s3_download_failures_total
+```
+
+If a dashboard shows no data, check that the app is being scraped:
+
+```bash
+curl "http://localhost:8082/api/v1/query?query=up%7Bjob%3D%22securefile%22%7D"
+```
+
+The expected result should include `"value":[...,"1"]`. Some panels show `0` until you generate traffic, for example by logging in, refreshing a token, generating a statement, or downloading a statement.
+
+## CI And Release Workflow
+
+The GitHub Actions release workflow is intentionally simulated. It models the expected build, quality, container promotion, deployment approval, and rollback stages, but it does not deploy to real INT, QA, or PROD infrastructure.
+
+This is useful for demonstrating the release shape before real hosting exists. A real deployment would need actual environment targets, registry publishing, runtime secrets, smoke checks, and rollback implementation.
+
 ## Todo For SE2
 - Add real integration tests with Testcontainers for PostgreSQL and LocalStack.
+
+## Todo For SE3
+- Add indexes, constraints, validation, transaction boundaries, pagination, and tests around edge cases like missing statements, expired tokens, and unauthorized access.
 
 ## out of scope
 - Add login rate limiting.
 - Add a scheduler to refresh standard 1 month, 3 month, 6 month, and 9 month statements.
 - Add dependency vulnerability scanning in CI.
 - Move secrets to AWS secret manager/github actions
-- Integrate instana/datadog
-- Setup alerts for failures, etc. 
 - kubernetes for autoscaling, load balancing, etc. 

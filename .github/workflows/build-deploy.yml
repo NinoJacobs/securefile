@@ -1,4 +1,4 @@
-name: Java Container Workflow
+name: Simulated Java Release Workflow
 
 on:
   pull_request:
@@ -22,10 +22,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  workflow-note:
+    name: Simulated Workflow Notice
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Explain workflow scope
+        run: |
+          echo "This is a simulated release workflow."
+          echo "It models build, quality, image promotion, deployment approvals, and rollback gates."
+          echo "It does not deploy to real INT, QA, or PROD infrastructure."
+
   build-application:
     name: Build Application
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    needs:
+      - workflow-note
 
     steps:
       - name: Mock build flow
@@ -75,6 +88,8 @@ jobs:
     name: Build Release Artifact
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    needs:
+      - workflow-note
     env:
       SECUREFILE_JWT_SECRET: ${{ secrets.SECUREFILE_JWT_SECRET }}
       SECUREFILE_JWT_REFRESH_SECRET: ${{ secrets.SECUREFILE_JWT_REFRESH_SECRET }}
@@ -120,7 +135,7 @@ jobs:
           echo "Promoted image tag: ${{ steps.image-tag.outputs.image_tag }}"
 
   deploy-int:
-    name: Deploy Integration
+    name: Simulate Deploy Integration
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs:
@@ -132,6 +147,7 @@ jobs:
       - name: Mock integration deployment flow
         run: |
           echo "deploy-int"
+          echo "Simulation only: no real integration infrastructure is changed."
           echo "1. Pull the approved image tag from the registry"
           echo "2. Inject integration environment variables and secrets"
           echo "3. Deploy the image to integration"
@@ -141,7 +157,7 @@ jobs:
           echo "Image tag: ${{ needs.build-and-push-container.outputs.image_tag }}"
 
   deploy-qa:
-    name: Deploy QA
+    name: Simulate Deploy QA
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs:
@@ -154,6 +170,7 @@ jobs:
       - name: Mock QA deployment flow
         run: |
           echo "deploy-qa"
+          echo "Simulation only: no real QA infrastructure is changed."
           echo "1. Reuse the exact image promoted from integration"
           echo "2. Inject QA environment variables and secrets"
           echo "3. Deploy the image to QA"
@@ -164,7 +181,7 @@ jobs:
           echo "Image tag: ${{ needs.build-and-push-container.outputs.image_tag }}"
 
   deploy-prod:
-    name: Deploy Production
+    name: Simulate Deploy Production
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs:
@@ -177,6 +194,7 @@ jobs:
       - name: Mock production deployment flow
         run: |
           echo "deploy-prod"
+          echo "Simulation only: no real production infrastructure is changed."
           echo "1. Confirm the protected production environment approval"
           echo "2. Reuse the exact image promoted from QA"
           echo "3. Inject production environment variables and secrets"
@@ -188,7 +206,7 @@ jobs:
           echo "Image tag: ${{ needs.build-and-push-container.outputs.image_tag }}"
 
   rollback-int:
-    name: Rollback Integration
+    name: Simulate Rollback Integration
     if: failure() && needs.deploy-int.result == 'failure'
     runs-on: ubuntu-latest
     needs:
@@ -200,6 +218,7 @@ jobs:
       - name: Mock integration rollback flow
         run: |
           echo "rollback-int"
+          echo "Simulation only: no real integration infrastructure is changed."
           echo "1. Confirm rollback approval for integration"
           echo "2. Pull the previous stable integration image"
           echo "3. Redeploy the previous stable image"
@@ -209,7 +228,7 @@ jobs:
           echo "Rollback image tag: previous-stable-int"
 
   rollback-qa:
-    name: Rollback QA
+    name: Simulate Rollback QA
     if: failure() && needs.deploy-qa.result == 'failure'
     runs-on: ubuntu-latest
     needs:
@@ -221,6 +240,7 @@ jobs:
       - name: Mock QA rollback flow
         run: |
           echo "rollback-qa"
+          echo "Simulation only: no real QA infrastructure is changed."
           echo "1. Confirm rollback approval for QA"
           echo "2. Pull the previous stable QA image"
           echo "3. Redeploy the previous stable image"
@@ -230,7 +250,7 @@ jobs:
           echo "Rollback image tag: previous-stable-qa"
 
   rollback-prod:
-    name: Rollback Production
+    name: Simulate Rollback Production
     if: failure() && needs.deploy-prod.result == 'failure'
     runs-on: ubuntu-latest
     needs:
@@ -242,6 +262,7 @@ jobs:
       - name: Mock production rollback flow
         run: |
           echo "rollback-prod"
+          echo "Simulation only: no real production infrastructure is changed."
           echo "1. Confirm rollback approval for production"
           echo "2. Pull the previous stable production image"
           echo "3. Redeploy the previous stable image"

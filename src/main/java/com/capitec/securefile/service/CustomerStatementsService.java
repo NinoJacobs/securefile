@@ -128,10 +128,16 @@ public class CustomerStatementsService {
 
         byte[] generatedContent = statementGenerationService.createStatementDocument(statement);
         StatementObjectStorageService.StoredStatementObject storedObject =
-                statementObjectStorageService.storeStatement(statement.getFileKey(), statement.getContentType(), generatedContent);
+                statementObjectStorageService.storeStatement(
+                        statement.getFileKey(),
+                        statement.getContentType(),
+                        generatedContent);
+
         statement.setFileSizeBytes(storedObject.fileSizeBytes());
         statement.setChecksum(storedObject.checksum());
+
         statementRepository.save(statement);
+
         return generatedContent;
     }
 }

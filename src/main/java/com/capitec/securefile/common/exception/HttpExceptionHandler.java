@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -18,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -38,9 +40,18 @@ public class HttpExceptionHandler {
             HttpServletRequest request) {
         String message = ex.getBindingResult().getFieldErrors().stream()
                 .sorted(Comparator.comparing(FieldError::getField))
-                .map(error -> "%s %s".formatted(error.getField(), error.getDefaultMessage()))
+                .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining("; "));
-        return buildResponse(HttpStatus.BAD_REQUEST, message, request);
+        if (message.isBlank()) {
+            message = ex.getBindingResult().getGlobalErrors().stream()
+                    .sorted(Comparator.comparing(ObjectError::getObjectName).thenComparing(ObjectError::getDefaultMessage))
+                    .map(ObjectError::getDefaultMessage)
+                    .collect(Collectors.joining("; "));
+        }
+        List<ErrorResponse.ValidationError> validationErrors = ex.getBindingResult().getAllErrors().stream()
+                .map(this::formatValidationError)
+                .toList();
+        return buildResponse(HttpStatus.BAD_REQUEST, message, request, validationErrors);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -51,7 +62,14 @@ public class HttpExceptionHandler {
                 .sorted(Comparator.comparing(violation -> violation.getPropertyPath().toString()))
                 .map(this::formatConstraintViolation)
                 .collect(Collectors.joining("; "));
-        return buildResponse(HttpStatus.BAD_REQUEST, message, request);
+        List<ErrorResponse.ValidationError> validationErrors = ex.getConstraintViolations().stream()
+                .sorted(Comparator.comparing(violation -> violation.getPropertyPath().toString()))
+                .map(violation -> ErrorResponse.ValidationError.builder()
+                        .field(violation.getPropertyPath().toString())
+                        .message(violation.getMessage())
+                        .build())
+                .toList();
+        return buildResponse(HttpStatus.BAD_REQUEST, message, request, validationErrors);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -92,12 +110,38 @@ public class HttpExceptionHandler {
             HttpServletRequest request) {
         return ResponseEntity.status(status)
                 .body(ErrorResponse.builder()
+                        .timestamp(OffsetDateTime.now(ZoneOffset.UTC))
                         .status(status.value())
                         .error(status.getReasonPhrase())
                         .message(message == null || message.isBlank() ? status.getReasonPhrase() : message)
                         .path(request.getRequestURI())
-                        .timestamp(OffsetDateTime.now(ZoneOffset.UTC))
+                        .method(request.getMethod())
                         .build());
+    }
+
+    private ResponseEntity<ErrorResponse> buildResponse(
+            HttpStatus status,
+            String message,
+            HttpServletRequest request,
+            List<ErrorResponse.ValidationError> validationErrors) {
+        return ResponseEntity.status(status)
+                .body(ErrorResponse.builder()
+                        .timestamp(OffsetDateTime.now(ZoneOffset.UTC))
+                        .status(status.value())
+                        .error(status.getReasonPhrase())
+                        .message(message == null || message.isBlank() ? status.getReasonPhrase() : message)
+                        .path(request.getRequestURI())
+                        .method(request.getMethod())
+                        .validationErrors(validationErrors)
+                        .build());
+    }
+
+    private ErrorResponse.ValidationError formatValidationError(ObjectError error) {
+        String field = error instanceof FieldError fieldError ? fieldError.getField() : error.getObjectName();
+        return ErrorResponse.ValidationError.builder()
+                .field(field)
+                .message(error.getDefaultMessage())
+                .build();
     }
 
 }

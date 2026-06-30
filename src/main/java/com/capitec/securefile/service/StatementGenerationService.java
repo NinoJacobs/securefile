@@ -22,7 +22,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
-import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -36,6 +35,7 @@ public class StatementGenerationService {
     private final StatementRepository statementRepository;
     private final StatementDocumentService statementDocumentService;
     private final StatementObjectStorageService statementObjectStorageService;
+    private final StatementFileFactory statementFileFactory;
     private final PlatformTransactionManager transactionManager;
 
     @Transactional
@@ -67,19 +67,17 @@ public class StatementGenerationService {
         }
 
         LocalDateTime generatedAt = LocalDateTime.now();
-        String periodSuffix = "%s-to-%s".formatted(dateRange.start(), dateRange.end());
-        String fileName = "%s-%s.pdf".formatted(customer.getCustomerNumber(), periodSuffix);
-        String fileKey = "statements/%s/%s-%s.pdf".formatted(customer.getCustomerNumber(), periodSuffix, UUID.randomUUID());
+        StatementFileFactory.StatementFile statementFile = statementFileFactory.create(customer, period, dateRange);
 
         Statement statement = Statement.builder()
                 .customer(customer)
                 .account(account)
-                .statementName(statementName(period, periodSuffix))
+                .statementName(statementFile.statementName())
                 .periodStart(dateRange.start())
                 .periodEnd(dateRange.end())
-                .fileKey(fileKey)
-                .fileName(fileName)
-                .contentType("application/pdf")
+                .fileKey(statementFile.fileKey())
+                .fileName(statementFile.fileName())
+                .contentType(statementFile.contentType())
                 .generatedAt(generatedAt)
                 .build();
 
@@ -93,7 +91,7 @@ public class StatementGenerationService {
 
         byte[] content = statementDocumentService.createStatementDocument(savedStatement, transactions);
         StatementObjectStorageService.StoredStatementObject storedObject =
-                statementObjectStorageService.storeStatement(fileKey, savedStatement.getContentType(), content);
+                statementObjectStorageService.storeStatement(statementFile.fileKey(), savedStatement.getContentType(), content);
 
         savedStatement.setFileSizeBytes(storedObject.fileSizeBytes());
         savedStatement.setChecksum(storedObject.checksum());
@@ -112,13 +110,6 @@ public class StatementGenerationService {
                 account.getId(),
                 dateRange.start(),
                 dateRange.end());
-    }
-
-    private String statementName(StatementPeriod period, String periodSuffix) {
-        if (period == StatementPeriod.CUSTOM) {
-            return "Custom Statement";
-        }
-        return "Statement %s".formatted(periodSuffix);
     }
 
     private List<AccountTransaction> transactionsFor(Statement statement) {

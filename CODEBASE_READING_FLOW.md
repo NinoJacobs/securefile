@@ -72,6 +72,57 @@ What to understand here:
 
 If this flow is clear, the rest of the app becomes easier.
 
+### Auth cheat sheet
+
+#### How `/api/v1/auth/login` works
+
+1. `AuthController` receives username and password.
+2. `AuthService` loads the user through `SecurefileUserDetailsService`.
+3. The password is checked with the password encoder.
+4. If valid, `JwtService` creates an access token and a refresh token.
+5. The response returns both tokens and their expiry times.
+
+#### How `/api/v1/auth/refresh` works
+
+1. `AuthController` receives a refresh token.
+2. `AuthService` asks `JwtService` to validate it.
+3. If valid, the user is loaded again from the database.
+4. A new access token and a new refresh token are issued.
+5. The old token is not stored or revoked in this app.
+
+#### How access tokens and refresh tokens differ
+
+- Access token:
+  used on normal API calls in the `Authorization` header
+- Refresh token:
+  only used to ask for a new token pair
+- Access token contains roles and customer context
+- Refresh token is only for re-issuing tokens
+- Access token is short-lived
+- Refresh token lives longer
+
+#### How issuer/audience are applied
+
+- `JwtService` writes `iss` and `aud` into both token types.
+- On validation, the token is rejected if `iss` does not match configured issuer.
+- It is also rejected if `aud` does not match configured audience.
+- This stops valid tokens being accepted in the wrong service or environment.
+
+#### How a request becomes an authenticated `SecurefilePrincipal`
+
+1. The request arrives with `Authorization: Bearer <token>`.
+2. `JwtAuthenticationFilter` extracts the token.
+3. `JwtService` validates signature, expiry, token type, issuer, and audience.
+4. If valid, the filter builds a `SecurefilePrincipal`.
+5. Spring Security stores that principal in the security context.
+
+#### How services get the current customer ID
+
+1. The JWT contains `customerId` for customer users.
+2. `JwtAuthenticationFilter` puts that value into `SecurefilePrincipal`.
+3. Service code calls `CurrentUser.requiredCustomerId()`.
+4. `CurrentUser` reads it from the security context.
+
 ## 4. Flow 2: Customer statement list and detail
 
 This is the main read-only customer flow.

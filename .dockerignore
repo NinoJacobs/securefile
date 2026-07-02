@@ -1,5 +1,8 @@
 .gradle
 build
+!build/
+!build/libs/
+!build/libs/*.jar
 .git
 .idea
 out

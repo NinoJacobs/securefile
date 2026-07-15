@@ -29,7 +29,7 @@ dependencies {
 
 	// Database access through Spring Data JPA.
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-	implementation("org.flywaydb:flyway-core")
+	implementation("org.springframework.boot:spring-boot-starter-flyway")
 	implementation("org.flywaydb:flyway-database-postgresql")
 
 	// Authentication, authorization, and password hashing.

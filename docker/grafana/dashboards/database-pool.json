@@ -6,7 +6,7 @@
       "id": 1,
       "type": "timeseries",
       "title": "Hikari Connections",
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "gridPos": {"h": 9, "w": 24, "x": 0, "y": 0},
       "targets": [
         {"expr": "sum by (pool) (hikaricp_connections_active)", "legendFormat": "{{pool}} active", "refId": "A"},
@@ -20,7 +20,7 @@
       "id": 2,
       "type": "stat",
       "title": "Connection Timeouts",
-      "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
       "gridPos": {"h": 6, "w": 8, "x": 0, "y": 9},
       "targets": [{"expr": "sum(hikaricp_connections_timeout_total)", "legendFormat": "timeouts", "refId": "A"}],
       "fieldConfig": {"defaults": {"unit": "none"}, "overrides": []},

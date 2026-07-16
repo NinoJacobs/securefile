@@ -16,6 +16,61 @@ Docker
 Docker Compose
 ```
 
+Install Java 25:
+
+- Homebrew option on macOS:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install openjdk@25
+sudo ln -sfn "$(brew --prefix)/opt/openjdk@25/libexec/openjdk.jdk" /Library/Java/JavaVirtualMachines/openjdk-25.jdk
+```
+
+- Oracle JDK 25 downloads for macOS, Windows, and Linux  
+  https://www.oracle.com/java/technologies/downloads/
+- Optional for macOS/Linux: install via SDKMAN  
+  https://sdkman.io/install/
+
+Verify Java:
+
+```bash
+java --version
+javac --version
+```
+
+The version output should start with `25`.
+
+Install Docker and Docker Compose:
+
+- Homebrew option on macOS:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install --cask docker-desktop
+```
+
+Docker Desktop includes Docker Compose. Start Docker Desktop once after install, then verify:
+
+```bash
+docker --version
+docker compose version
+```
+
+- macOS: install Docker Desktop for Mac  
+  https://docs.docker.com/desktop/setup/install/mac-install/
+- Windows: install Docker Desktop for Windows  
+  https://docs.docker.com/desktop/setup/install/windows-install/
+- Ubuntu/Linux: install Docker Engine, then install the Docker Compose plugin  
+  https://docs.docker.com/engine/install/ubuntu/  
+  https://docs.docker.com/compose/install/linux/
+
+Verify the install:
+
+```bash
+docker --version
+docker compose version
+```
+
 Start the full local stack:
 
 ```bash

@@ -47,7 +47,8 @@ services:
       start_period: 10s
 
   localstack:
-    image: localstack/localstack:4
+    build:
+      context: ./docker/localstack
     container_name: securefile-localstack
     environment:
       SERVICES: s3
@@ -59,7 +60,6 @@ services:
       - "4566:4566"
     volumes:
       - securefile-localstack-data:/var/lib/localstack
-      - ./docker/localstack/init/01-create-bucket.sh:/etc/localstack/init/ready.d/01-create-bucket.sh:ro
 
   prometheus:
     image: prom/prometheus:latest

@@ -74,7 +74,8 @@ docker compose version
 Start the full local stack:
 
 ```bash
-chmod +x docker/localstack/init/01-create-bucket.sh
+./gradlew clean
+./gradlew bootJar
 docker compose -f docker-compose.yaml up --build
 ```
 
@@ -98,7 +99,8 @@ Reset local data and rebuild from scratch:
 
 ```bash
 docker compose -f docker-compose.yaml down -v
-docker compose -f docker-compose.yaml up --build
+docker compose -f docker-compose.yaml build --no-cache app
+docker compose -f docker-compose.yaml up
 ```
 
 ## Useful URLs

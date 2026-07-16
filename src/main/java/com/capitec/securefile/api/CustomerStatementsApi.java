@@ -13,6 +13,7 @@ import jakarta.validation.constraints.NotBlank;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -34,7 +35,7 @@ public interface CustomerStatementsApi {
     ResponseEntity<List<StatementSummaryResponse>> listStatements();
 
     @Operation(summary = "Request a statement for the current customer")
-    ResponseEntity<StatementDetailResponse> requestStatement(@Valid StatementGenerationRequest request);
+    ResponseEntity<StatementDetailResponse> requestStatement(@Valid @RequestBody StatementGenerationRequest request);
 
     @Operation(summary = "Get a single statement for the current customer")
     @ApiResponses(

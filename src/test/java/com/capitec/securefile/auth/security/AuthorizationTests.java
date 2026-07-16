@@ -144,7 +144,12 @@ class AuthorizationTests {
 
         mockMvc.perform(post("/api/v1/customers/me/statements/generate")
                         .header("Authorization", "Bearer customer-token")
-                        .param("period", "CUSTOM"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "period": "CUSTOM"
+                                }
+                                """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("startDate and endDate are required for custom statements"))

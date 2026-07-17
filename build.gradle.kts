@@ -1,7 +1,13 @@
+import org.gradle.api.tasks.SourceSetContainer
+import org.gradle.testing.jacoco.tasks.JacocoCoverageVerification
+import org.gradle.testing.jacoco.tasks.JacocoReport
+import java.math.BigDecimal
+
 plugins {
 	java
 	id("org.springframework.boot") version "4.1.0"
 	id("io.spring.dependency-management") version "1.1.7"
+	jacoco
 }
 
 group = "com.capitec"
@@ -16,6 +22,24 @@ java {
 repositories {
 	mavenCentral()
 }
+
+jacoco {
+	toolVersion = "0.8.13"
+}
+
+val coverageExclusions = listOf(
+	"com/capitec/securefile/SecurefileApplication.class",
+	"com/capitec/securefile/database/entity/**",
+	"com/capitec/securefile/model/**",
+	"com/capitec/securefile/common/mapper/**"
+)
+
+val mainSourceSet = the<SourceSetContainer>()["main"]
+val filteredCoverageClasses = files(
+	mainSourceSet.output.asFileTree.matching {
+		exclude(coverageExclusions)
+	}
+)
 
 dependencies {
 	// Spring application foundation.
@@ -87,4 +111,33 @@ dependencies {
 tasks.withType<Test> {
 	useJUnitPlatform()
 	systemProperty("spring.profiles.active", "test")
+	finalizedBy(tasks.named("jacocoTestReport"))
+}
+
+tasks.named<JacocoReport>("jacocoTestReport") {
+	dependsOn(tasks.test)
+	classDirectories.setFrom(filteredCoverageClasses)
+	reports {
+		xml.required.set(true)
+		html.required.set(true)
+		csv.required.set(false)
+	}
+}
+
+tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+	dependsOn(tasks.test)
+	classDirectories.setFrom(filteredCoverageClasses)
+	violationRules {
+		rule {
+			limit {
+				counter = "LINE"
+				value = "COVEREDRATIO"
+				minimum = BigDecimal("0.50")
+			}
+		}
+	}
+}
+
+tasks.named("check") {
+	dependsOn(tasks.named("jacocoTestCoverageVerification"))
 }

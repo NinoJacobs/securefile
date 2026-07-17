@@ -87,7 +87,7 @@ jobs:
       - name: Run test suite
         run: |
           chmod +x ./gradlew
-          ./gradlew test --no-daemon
+          ./gradlew check --no-daemon
 
   build-container:
     name: Build Container
@@ -130,7 +130,7 @@ jobs:
       - name: Build and test release artifact
         run: |
           chmod +x ./gradlew
-          ./gradlew clean bootJar test --no-daemon
+          ./gradlew clean bootJar check --no-daemon
 
       - name: Upload release artifact
         uses: actions/upload-artifact@v4

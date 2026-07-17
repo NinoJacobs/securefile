@@ -1,0 +1,58 @@
+services:
+  app:
+    image: ${IMAGE_TAG}
+    container_name: securefile-app-int
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5433/securefile
+      DB_USERNAME: admin
+      DB_PASSWORD: admin
+      SECUREFILE_JWT_SECRET: local-dev-jwt-secret-change-me
+      SECUREFILE_JWT_TTL_MINUTES: "5"
+      SECUREFILE_JWT_REFRESH_SECRET: local-dev-jwt-refresh-secret-change-me
+      SECUREFILE_JWT_REFRESH_TTL_MINUTES: "10080"
+      SECUREFILE_JWT_ISSUER: securefile-auth-local
+      SECUREFILE_JWT_AUDIENCE: securefile-api-local
+      SECUREFILE_DOWNLOAD_LINK_SECRET: local-dev-download-link-secret-change-me
+      SECUREFILE_S3_ENDPOINT: http://localstack:4566
+      SECUREFILE_S3_REGION: us-east-1
+      SECUREFILE_S3_BUCKET: securefile-statements
+      SECUREFILE_S3_ACCESS_KEY: test
+      SECUREFILE_S3_SECRET_KEY: test
+      SECUREFILE_S3_PATH_STYLE_ACCESS_ENABLED: "true"
+    ports:
+      - "8080:8080"
+
+  postgres:
+    image: postgres:16
+    container_name: securefile-postgres-int
+    command: ["postgres", "-p", "5433"]
+    environment:
+      POSTGRES_DB: securefile
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5433:5433"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d securefile -p 5433"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  localstack:
+    build:
+      context: ./docker/localstack
+    container_name: securefile-localstack-int
+    environment:
+      SERVICES: s3
+      AWS_DEFAULT_REGION: us-east-1
+      DEBUG: "1"
+      PERSISTENCE: "0"
+      SECUREFILE_S3_BUCKET: securefile-statements
+    ports:
+      - "4566:4566"

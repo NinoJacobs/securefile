@@ -183,26 +183,55 @@ jobs:
         run: docker push "${{ steps.image-tag.outputs.image_tag }}"
 
   deploy-int:
-    name: Simulate Deploy Integration
+    name: Deploy Integration
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     needs:
       - build-and-push-container
     environment:
       name: int
+    env:
+      IMAGE_TAG: ${{ needs.build-and-push-container.outputs.image_tag }}
 
     steps:
-      - name: Mock integration deployment flow
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Deploy integration stack
+        run: docker compose -f docker-compose.int.yml up -d --build
+
+      - name: Wait for application readiness
         run: |
-          echo "deploy-int"
-          echo "Simulation only: no real integration infrastructure is changed."
-          echo "1. Pull the approved image tag from the registry"
-          echo "2. Inject integration environment variables and secrets"
-          echo "3. Deploy the image to integration"
-          echo "4. Wait for the health endpoint to report ready"
-          echo "5. Run service integration checks"
-          echo "Result: deployed to integration"
-          echo "Image tag: ${{ needs.build-and-push-container.outputs.image_tag }}"
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8080/api-docs >/dev/null; then
+              exit 0
+            fi
+            sleep 5
+          done
+          docker compose -f docker-compose.int.yml logs app
+          docker compose -f docker-compose.int.yml logs postgres
+          docker compose -f docker-compose.int.yml logs localstack
+          exit 1
+
+      - name: Smoke test login
+        run: |
+          curl -fsS -X POST http://localhost:8080/api/v1/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"username":"customer.one","password":"password"}' \
+            > login.json
+
+      - name: Smoke test customer statements
+        run: |
+          ACCESS_TOKEN=$(python3 -c "import json; print(json.load(open('login.json'))['accessToken'])")
+          curl -fsS http://localhost:8080/api/v1/customers/me/statements \
+            -H "Authorization: Bearer ${ACCESS_TOKEN}"
+
+      - name: Tear down integration stack
+        if: always()
+        run: docker compose -f docker-compose.int.yml down -v
 
   deploy-qa:
     name: Simulate Deploy QA

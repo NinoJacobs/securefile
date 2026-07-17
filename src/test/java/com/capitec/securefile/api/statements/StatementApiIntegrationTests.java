@@ -154,6 +154,17 @@ class StatementApiIntegrationTests {
     }
 
     @Test
+    void customerGetsBadRequestForMalformedStatementId() throws Exception {
+        String accessToken = login("customer.one", PASSWORD);
+
+        mockMvc.perform(get("/api/v1/customers/me/statements/{statementId}", "abc")
+                        .header("Authorization", bearer(accessToken)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Invalid value for statementId"));
+    }
+
+    @Test
     void adminCannotUseCustomerEndpoints() throws Exception {
         String accessToken = login("admin.user", PASSWORD);
 

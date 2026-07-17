@@ -1,5 +1,6 @@
 package com.capitec.securefile.api;
 
+import com.capitec.securefile.common.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -20,14 +21,19 @@ import java.lang.annotation.Target;
                 @ApiResponse(
                         responseCode = "400",
                         description = "Request does not adhere to the expected standard.",
-                        content = @Content),
+                        content = {
+                                @Content(
+                                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                        schema = @Schema(implementation = ErrorResponse.class)
+                                )
+                        }),
                 @ApiResponse(
                         responseCode = "409",
                         description = "Request cannot be processed.",
                         content = {
                                 @Content(
                                         mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                        schema = @Schema(implementation = Exception.class)
+                                        schema = @Schema(implementation = ErrorResponse.class)
                                 )
                         }),
                 @ApiResponse(
@@ -36,7 +42,7 @@ import java.lang.annotation.Target;
                         content = {
                                 @Content(
                                         mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                        schema = @Schema(implementation = Exception.class)
+                                        schema = @Schema(implementation = ErrorResponse.class)
                                 )
                         })
         })

@@ -7,8 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Optional;
-
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Service
@@ -18,19 +16,8 @@ public class StatementDomainSupportService {
     private final StatementRepository statementRepository;
 
     @Transactional(readOnly = true)
-    public Statement findStatementForCustomer(String statementId, Long customerId) {
-        Long id = parseLong(statementId)
+    public Statement findStatementForCustomer(Long statementId, Long customerId) {
+        return statementRepository.findByIdAndCustomerId(statementId, customerId)
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Statement not found"));
-
-        return statementRepository.findByIdAndCustomerId(id, customerId)
-                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Statement not found"));
-    }
-
-    private Optional<Long> parseLong(String value) {
-        try {
-            return Optional.of(Long.parseLong(value));
-        } catch (NumberFormatException ex) {
-            return Optional.empty();
-        }
     }
 }

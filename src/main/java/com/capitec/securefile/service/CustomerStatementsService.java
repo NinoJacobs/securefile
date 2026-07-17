@@ -72,7 +72,7 @@ public class CustomerStatementsService {
     }
 
     @Transactional
-    public StatementDetailResponse getMyStatement(String statementId) {
+    public StatementDetailResponse getMyStatement(Long statementId) {
         Long customerId = CurrentUser.requiredCustomerId();
 
         Statement statement = statementDomainSupportService.findStatementForCustomer(statementId, customerId);
@@ -83,7 +83,7 @@ public class CustomerStatementsService {
     }
 
     @Transactional
-    public ResponseEntity<Resource> downloadStatement(String statementId, String token) {
+    public ResponseEntity<Resource> downloadStatement(Long statementId, String token) {
         try {
             Long customerId = CurrentUser.requiredCustomerId();
             Statement statement = statementDomainSupportService.findStatementForCustomer(statementId, customerId);

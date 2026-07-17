@@ -43,14 +43,14 @@ public class CustomerStatementsController implements CustomerStatementsApi {
 
     @GetMapping("/{statementId}")
     @Override
-    public ResponseEntity<StatementDetailResponse> getStatement(@PathVariable String statementId) {
+    public ResponseEntity<StatementDetailResponse> getStatement(@PathVariable Long statementId) {
         return ResponseEntity.ok(customerStatementsService.getMyStatement(statementId));
     }
 
     @GetMapping("/{statementId}/download")
     @Override
     public ResponseEntity<Resource> downloadStatement(
-            @PathVariable String statementId,
+            @PathVariable Long statementId,
             @RequestParam String token) {
         return customerStatementsService.downloadStatement(statementId, token);
     }

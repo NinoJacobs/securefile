@@ -79,7 +79,9 @@ Start the full local stack:
 docker compose -f docker-compose.yaml up --build
 ```
 
-The current `Dockerfile` copies `build/libs/*.jar` into the app image, so `./gradlew bootJar` must be run before `docker compose up --build`.
+Local Docker Compose uses `Dockerfile.local`, which copies `build/libs/*.jar` into the app image. That is why `./gradlew bootJar` must be run before `docker compose up --build` on your machine.
+
+CI and deployment builds use the default `Dockerfile`, which is self-contained and builds the jar inside a multi-stage Docker build. INT, QA, and PROD therefore do not depend on `build/libs` from the host.
 
 This starts:
 
@@ -163,6 +165,16 @@ Call a protected customer endpoint:
 curl http://localhost:8080/api/v1/customers/me/statements \
   -H "Authorization: Bearer <accessToken>"
 ```
+
+## API Contract Checklist
+
+When changing an endpoint:
+
+1. Update the API interface in `src/main/java/com/capitec/securefile/api`
+2. Keep controller parameter types aligned with the domain contract
+3. Document request bodies, parameters, and error responses in OpenAPI annotations
+4. Update integration tests for the current endpoint shape
+5. Update README examples if the request or response format changed
 
 ## Database Migrations
 

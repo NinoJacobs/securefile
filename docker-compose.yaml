@@ -1,6 +1,8 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.local
     container_name: securefile-app
     depends_on:
       postgres:

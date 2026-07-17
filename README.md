@@ -79,6 +79,8 @@ Start the full local stack:
 docker compose -f docker-compose.yaml up --build
 ```
 
+The current `Dockerfile` copies `build/libs/*.jar` into the app image, so `./gradlew bootJar` must be run before `docker compose up --build`.
+
 This starts:
 
 ```text
@@ -99,6 +101,8 @@ Reset local data and rebuild from scratch:
 
 ```bash
 docker compose -f docker-compose.yaml down -v
+./gradlew clean
+./gradlew bootJar
 docker compose -f docker-compose.yaml build --no-cache app
 docker compose -f docker-compose.yaml up
 ```
@@ -181,13 +185,13 @@ docker compose -f docker-compose.yaml ps
 Verify PostgreSQL:
 
 ```bash
-docker exec securefile-postgres pg_isready -U admin -d securefile
+docker exec securefile-postgres pg_isready -U admin -d securefile -p 5433
 ```
 
 Verify seeded PostgreSQL data:
 
 ```bash
-docker exec securefile-postgres psql -U admin -d securefile -c "
+docker exec securefile-postgres psql -U admin -d securefile -p 5433 -c "
 SELECT 'users' AS table_name, count(*) FROM users
 UNION ALL SELECT 'customers', count(*) FROM customers
 UNION ALL SELECT 'accounts', count(*) FROM accounts

@@ -42,8 +42,8 @@ class StatementDocumentServiceTest {
         assertThat(text).contains("Account Type: TRANSACTIONAL");
         assertThat(text).contains("Salary payment");
         assertThat(text).contains("REF123");
-        assertThat(text).contains("R 1000,00");
-        assertThat(text).contains("R 2000,00");
+        assertThat(text).contains("R 1000.00");
+        assertThat(text).contains("R 2000.00");
     }
 
     @Test

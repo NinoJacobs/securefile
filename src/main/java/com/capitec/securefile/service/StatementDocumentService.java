@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class StatementDocumentService {
@@ -85,7 +86,7 @@ public class StatementDocumentService {
     }
 
     private String money(BigDecimal value) {
-        return "R %.2f".formatted(value == null ? BigDecimal.ZERO : value);
+        return String.format(Locale.US, "R %.2f", value == null ? BigDecimal.ZERO : value);
     }
 
     private String maskAccountNumber(String accountNumber) {
